@@ -1,0 +1,6 @@
+@OddoBhf_HostAddress = http://localhost:5070
+
+GET {{OddoBhf_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
