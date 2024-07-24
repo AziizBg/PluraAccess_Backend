@@ -89,6 +89,8 @@ namespace OddoBhf.Controllers
                     Session session = new Session
                     {
                         StartTime = DateTime.Now,
+                        LicenceId = licence.Id,
+                        Licence = licence,
                         UserNotes = ""
                     };
                     _sessionRepository.AddSession(session);
