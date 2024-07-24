@@ -16,6 +16,8 @@ namespace OddoBhf.Repositories
         public void AddSession(Session session)
         {
             _context.Sessions.Add(session);
+            _context.SaveChanges();
+
         }
 
         public void DeleteSession(int id)
@@ -34,21 +36,14 @@ namespace OddoBhf.Repositories
             return _context.Sessions.Find(id);
         }
 
-        public void Save()
-        {
-            _context.SaveChanges();
-        }
 
         public void UpdateSession(Session session)
         {
             _context.Sessions.Update(session);
+            _context.SaveChanges();
+
         }
 
-        //get session by licence id
-        public Session GetSessionByLicenceId(int licenceId)
-        {
-            return _context.Sessions.FirstOrDefault(s => s.LicenceId == licenceId);
-        }
 
 
 

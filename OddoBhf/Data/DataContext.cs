@@ -14,21 +14,37 @@ namespace OddoBhf.Data
         public DbSet<Session> Sessions { get; set; }
         public DbSet<User> Users { get; set; }
 
-/*        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        /*        protected override void OnModelCreating(ModelBuilder modelBuilder)
+                {
+                    base.OnModelCreating(modelBuilder);
+
+                    modelBuilder.Entity<Licence>()
+                        .HasOne(l => l.CurrentSession)
+                        .WithOne(s => s.Licence)
+                        .HasForeignKey<Session>(s => s.LicenceId)
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    modelBuilder.Entity<Session>()
+                        .HasOne(s => s.Licence)
+                        .WithOne(l => l.CurrentSession)
+                        .HasForeignKey<Licence>(l => l.CurrentSessionId)
+                        .OnDelete(DeleteBehavior.Cascade);
+                }*/
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<Licence>()
+                .HasMany(l => l.Sessions)
+                .WithOne(s => s.Licence)
+                .HasForeignKey(s => s.LicenceId);
 
             modelBuilder.Entity<Licence>()
                 .HasOne(l => l.CurrentSession)
-                .WithOne(s => s.Licence)
-                .HasForeignKey<Session>(s => s.LicenceId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .WithOne()
+                .HasForeignKey<Licence>(l => l.CurrentSessionId);
 
-            modelBuilder.Entity<Session>()
-                .HasOne(s => s.Licence)
-                .WithOne(l => l.CurrentSession)
-                .HasForeignKey<Licence>(l => l.CurrentSessionId)
-                .OnDelete(DeleteBehavior.Cascade);
-        }*/
+            base.OnModelCreating(modelBuilder);
+        }
+
     }
 }

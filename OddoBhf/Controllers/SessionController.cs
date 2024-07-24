@@ -36,7 +36,6 @@ namespace OddoBhf.Controllers
         public void AddSession([FromBody] Session session)
         {
             _sessionRepository.AddSession(session);
-            _sessionRepository.Save();
         }
 
         // PUT api/<SessionController>/5
@@ -44,7 +43,6 @@ namespace OddoBhf.Controllers
         public void UpdateSession(int id, [FromBody] Session session)
         {
             _sessionRepository.UpdateSession(session);
-            _sessionRepository.Save();
         }
 
         // DELETE api/<SessionController>/5
@@ -52,7 +50,6 @@ namespace OddoBhf.Controllers
         public void DeleteSession(int id)
         {
             _sessionRepository.DeleteSession(id);
-            _sessionRepository.Save();
         }
 
 

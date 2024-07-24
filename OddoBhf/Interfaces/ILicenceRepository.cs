@@ -10,5 +10,4 @@ public interface ILicenceRepository
     void AddLicence(Licence licence);
     void UpdateLicence(Licence licence);
     void DeleteLicence(int id);
-    void Save();
 }

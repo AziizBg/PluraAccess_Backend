@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using OddoBhf.Interfaces;
 using OddoBhf.Models;
+using System.Net.Http;
+
 
 namespace OddoBhf.Controllers
 {
@@ -11,10 +13,13 @@ namespace OddoBhf.Controllers
     {
         private readonly ILicenceRepository _licenceRepository;
         private readonly ISessionRepository _sessionRepository;
-        public LicenceController(ILicenceRepository licenceRepository, ISessionRepository sessionRepository)
+        private readonly HttpClient _httpClient;
+
+        public LicenceController(ILicenceRepository licenceRepository, ISessionRepository sessionRepository, HttpClient httpClient)
         {
             _licenceRepository = licenceRepository;
             _sessionRepository = sessionRepository;
+            _httpClient = httpClient;
         }
 
 
@@ -42,14 +47,26 @@ namespace OddoBhf.Controllers
         public IActionResult CreateLicence([FromBody] Licence licence)
         {
             _licenceRepository.AddLicence(licence);
-            _licenceRepository.Save();
             return CreatedAtAction("GetLicences", new { id = licence.Id }, licence);
+        }
+
+        //PUT: LicenceController
+        [HttpPut("{id}")]
+        [ProducesResponseType(204)]
+        public IActionResult UpdateLicence(int id, [FromBody] Licence licence)
+        {
+            if (id != licence.Id)
+            {
+                return BadRequest();
+            }
+            _licenceRepository.UpdateLicence(licence);
+            return NoContent();
         }
 
         //GET: take licence
         [HttpGet("{id}/take")]
         [ProducesResponseType(200, Type=typeof(Licence))]
-        public IActionResult TakeLicence(int id)
+        public async Task<IActionResult> TakeLicence(int id)
         {
 //            return Ok(_licences.FirstOrDefault(l => l.Id == id));
             var licence = _licenceRepository.GetLicenceById(id);
@@ -59,14 +76,38 @@ namespace OddoBhf.Controllers
             }
             if (licence.IsAvailable)
             {
-                licence.IsAvailable = false;
-                _licenceRepository.UpdateLicence(licence);
-                _licenceRepository.Save();
 
-                _sessionRepository.AddSession(new Session { Licence = licence, StartTime = DateTime.Now });
-                _sessionRepository.Save();
+                try
+                {
+                    var response = await _httpClient.GetAsync("http://127.0.0.1:5000/get_cookie");
 
-                return Ok(licence);
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        return StatusCode((int)response.StatusCode, new { message = "Error fetching data" });
+                    }
+
+                    Session session = new Session
+                    {
+                        StartTime = DateTime.Now,
+                        UserNotes = ""
+                    };
+                    _sessionRepository.AddSession(session);
+
+                    licence.IsAvailable = false;
+                    licence.CurrentSession = session;
+
+                    _licenceRepository.UpdateLicence(licence);
+
+                    return Ok(licence);
+
+
+                }
+                catch (Exception ex)
+                {
+                    return StatusCode(500, new { message = ex.Message });
+                }
+
+
             }
             return BadRequest("Licence is not available");
         }
@@ -74,26 +115,41 @@ namespace OddoBhf.Controllers
         //GET: return licence
         [HttpGet("{id}/return")]
         [ProducesResponseType(200, Type=typeof(Licence))]
-        public IActionResult ReturnLicence(int id)
+        public async Task<IActionResult> ReturnLicence(int id)
         {
             var licence = _licenceRepository.GetLicenceById(id);
             if (licence == null)
             {
                 return NotFound();
             }
+
             if (!licence.IsAvailable)
-            {
-                licence.IsAvailable = true;
-                _licenceRepository.UpdateLicence(licence);
-                _licenceRepository.Save();
 
-                var session = _sessionRepository.GetSessionByLicenceId(id);
-                session.EndTime = DateTime.Now;
-                _sessionRepository.UpdateSession(session);
-                _sessionRepository.Save();
+                try
+                {
+                    var response = await _httpClient.GetAsync("http://127.0.0.1:5000/close");
 
-                return Ok(licence);
-            }
+                    if (!response.IsSuccessStatusCode)
+                    {
+                  //      return StatusCode((int)response.StatusCode, new { message = "Error fetching data" });
+                    }
+
+                    licence.CurrentSession.EndTime = DateTime.Now;
+                    _sessionRepository.UpdateSession(licence.CurrentSession);
+
+                    licence.IsAvailable = true;
+                    licence.CurrentSession = null;
+                    _licenceRepository.UpdateLicence(licence);
+
+                    return Ok(licence);
+
+                }
+                catch (Exception ex)
+                {
+                    return StatusCode(500, new { message = ex.Message });
+                }
+
+            
             return BadRequest("Licence is already available");
         }
 
