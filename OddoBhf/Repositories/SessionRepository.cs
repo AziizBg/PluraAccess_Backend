@@ -1,4 +1,5 @@
-﻿using OddoBhf.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using OddoBhf.Data;
 using OddoBhf.Interfaces;
 using OddoBhf.Models;
 
@@ -28,12 +29,12 @@ namespace OddoBhf.Repositories
 
         public ICollection<Session> GetAllSessions()
         {
-            return _context.Sessions.ToList();
+            return _context.Sessions.Include(s => s.User).ToList();
         }
 
         public Session GetSessionById(int id)
         {
-            return _context.Sessions.Find(id);
+            return _context.Sessions.Include(s => s.User).First(s => s.Id == id);
         }
 
 

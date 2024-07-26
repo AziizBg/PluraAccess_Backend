@@ -43,6 +43,12 @@ namespace OddoBhf.Data
                 .WithOne()
                 .HasForeignKey<Licence>(l => l.CurrentSessionId);
 
+            modelBuilder.Entity<Session>()
+                .HasOne(s => s.User)
+                .WithMany(u => u.Sessions)
+                .HasForeignKey(s => s.UserId);
+
+
             base.OnModelCreating(modelBuilder);
         }
 

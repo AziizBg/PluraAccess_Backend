@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using OddoBhf.Interfaces;
 using OddoBhf.Models;
 using System.Net.Http;
+using System.Text.Json;
+using System.Text;
 
 
 namespace OddoBhf.Controllers
@@ -64,9 +66,9 @@ namespace OddoBhf.Controllers
         }
 
         //GET: take licence
-        [HttpGet("{id}/take")]
+        [HttpPost("{id}/take")]
         [ProducesResponseType(200, Type=typeof(Licence))]
-        public async Task<IActionResult> TakeLicence(int id)
+        public async Task<IActionResult> TakeLicence(int id, [FromBody] User user)
         {
 //            return Ok(_licences.FirstOrDefault(l => l.Id == id));
             var licence = _licenceRepository.GetLicenceById(id);
@@ -79,7 +81,25 @@ namespace OddoBhf.Controllers
 
                 try
                 {
-                    var response = await _httpClient.GetAsync("http://127.0.0.1:5000/get_cookie");
+                    var url = "http://127.0.0.1:5000/get_cookie";
+                    var email = "sami.belhadj@oddo-bhf.com";
+                    var password = "7cB3MP.6y9.Z?c?"; // Replace with actual password
+
+                    // Create the payload
+                    var payload = new
+                    {
+                        email,
+                        password
+                    };
+
+                    // Serialize the payload to JSON
+                    var jsonPayload = JsonSerializer.Serialize(payload);
+
+                    // Create the StringContent with the JSON payload and set the content type
+                    var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+
+                    // Send the POST request
+                    var response = await _httpClient.PostAsync(url, content);
 
                     if (!response.IsSuccessStatusCode)
                     {
@@ -91,6 +111,7 @@ namespace OddoBhf.Controllers
                         StartTime = DateTime.Now,
                         LicenceId = licence.Id,
                         Licence = licence,
+                        UserId = user.Id,
                         UserNotes = ""
                     };
                     _sessionRepository.AddSession(session);
