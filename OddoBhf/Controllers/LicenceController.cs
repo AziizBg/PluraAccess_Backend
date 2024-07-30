@@ -15,23 +15,24 @@ namespace OddoBhf.Controllers
     {
         private readonly ILicenceRepository _licenceRepository;
         private readonly ISessionRepository _sessionRepository;
+        private readonly IUserRepository _userRepository;
         private readonly HttpClient _httpClient;
 
-        public LicenceController(ILicenceRepository licenceRepository, ISessionRepository sessionRepository, HttpClient httpClient)
+        public LicenceController(ILicenceRepository licenceRepository, ISessionRepository sessionRepository, IUserRepository userRepository, HttpClient httpClient)
         {
             _licenceRepository = licenceRepository;
             _sessionRepository = sessionRepository;
+            _userRepository = userRepository;
             _httpClient = httpClient;
         }
 
-
-        /*private ICollection<Licence>? _licences = new List<Licence>
+        // Get licence by id:
+        [HttpGet("{id}")]
+        [ProducesResponseType(200, Type=typeof(Licence))]
+        public IActionResult GetLicenceById(int id)
         {
-            new Licence { Id = 1, Email= "sami.belhadj@oddo-bhf.com", Password= "7cB3MP.6y9.Z?c?", IsAvailable=true },
-            new Licence { Id = 2, Email= "aziz@oddo-bhf.com", Password="7cB3MP.6y9.Z?c?", IsAvailable=false},
-            new Licence { Id = 3, Email= "ahmed@oddo-bhf.com", Password="7cB3MP.6y9.Z?c?", IsAvailable=false}
-        };*/
-
+            return Ok(_licenceRepository.GetLicenceById(id));
+        }
 
 
         // GET: LicenceController
@@ -40,7 +41,6 @@ namespace OddoBhf.Controllers
         public IActionResult GetLicences()
         {
             return Ok(_licenceRepository.GetAllLicences());
-//            return Ok(_licences);
         }
 
         //POST: LicenceController 
@@ -68,15 +68,14 @@ namespace OddoBhf.Controllers
         //GET: take licence
         [HttpPost("{id}/take")]
         [ProducesResponseType(200, Type=typeof(Licence))]
-        public async Task<IActionResult> TakeLicence(int id, [FromBody] User user)
+        public async Task<IActionResult> TakeLicence(int id, [FromBody] int UserId)
         {
-//            return Ok(_licences.FirstOrDefault(l => l.Id == id));
             var licence = _licenceRepository.GetLicenceById(id);
             if (licence == null)
             {
                 return NotFound();
             }
-            if (licence.IsAvailable)
+            if (licence.CurrentSession == null)
             {
 
                 try
@@ -84,6 +83,12 @@ namespace OddoBhf.Controllers
                     var url = "http://127.0.0.1:5000/get_cookie";
                     var email = "sami.belhadj@oddo-bhf.com";
                     var password = "7cB3MP.6y9.Z?c?"; // Replace with actual password
+                    var user = _userRepository.GetUserById(UserId);
+
+                    if(user == null)
+                    {
+                        return StatusCode(StatusCodes.Status404NotFound, new { message = "user not provided" });
+                    }
 
                     // Create the payload
                     var payload = new
@@ -109,14 +114,17 @@ namespace OddoBhf.Controllers
                     Session session = new Session
                     {
                         StartTime = DateTime.Now,
-                        LicenceId = licence.Id,
+//                        LicenceId = licence.Id,
                         Licence = licence,
-                        UserId = user.Id,
+                        User = user,
+                        //UserId = user.Id,
                         UserNotes = ""
                     };
+                    Console.WriteLine("licence: ", licence);
+                    Console.WriteLine("Session: ", session);
                     _sessionRepository.AddSession(session);
 
-                    licence.IsAvailable = false;
+  //                  licence.IsAvailable = false;
                     licence.CurrentSession = session;
 
                     _licenceRepository.UpdateLicence(licence);
@@ -137,7 +145,7 @@ namespace OddoBhf.Controllers
 
         //GET: return licence
         [HttpGet("{id}/return")]
-        [ProducesResponseType(200, Type=typeof(Licence))]
+        [ProducesResponseType(200, Type = typeof(Licence))]
         public async Task<IActionResult> ReturnLicence(int id)
         {
             var licence = _licenceRepository.GetLicenceById(id);
@@ -146,7 +154,9 @@ namespace OddoBhf.Controllers
                 return NotFound();
             }
 
-            if (!licence.IsAvailable)
+            if (licence.CurrentSession != null)
+            {
+                var currentSession = _sessionRepository.GetSessionById(licence.CurrentSession.Id);
 
                 try
                 {
@@ -154,15 +164,20 @@ namespace OddoBhf.Controllers
 
                     if (!response.IsSuccessStatusCode)
                     {
-                  //      return StatusCode((int)response.StatusCode, new { message = "Error fetching data" });
+                        //      return StatusCode((int)response.StatusCode, new { message = "Error fetching data" });
                     }
 
-                    licence.CurrentSession.EndTime = DateTime.Now;
-                    _sessionRepository.UpdateSession(licence.CurrentSession);
+                    currentSession.EndTime = DateTime.Now;
+                    currentSession.Licence = licence;
 
-                    licence.IsAvailable = true;
+                    _sessionRepository.UpdateSession(currentSession);
+
+
+                    //                    licence.IsAvailable = true;
                     licence.CurrentSession = null;
                     _licenceRepository.UpdateLicence(licence);
+                    return Ok(_sessionRepository.GetSessionById(currentSession.Id));
+
 
                     return Ok(licence);
 
@@ -172,8 +187,9 @@ namespace OddoBhf.Controllers
                     return StatusCode(500, new { message = ex.Message });
                 }
 
+            }
+                return BadRequest("Licence is already available");
             
-            return BadRequest("Licence is already available");
         }
 
     }

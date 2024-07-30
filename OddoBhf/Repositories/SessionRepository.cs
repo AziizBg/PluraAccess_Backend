@@ -29,12 +29,12 @@ namespace OddoBhf.Repositories
 
         public ICollection<Session> GetAllSessions()
         {
-            return _context.Sessions.Include(s => s.User).ToList();
+            return _context.Sessions.Include(s => s.User).Include(s=>s.Licence).ToList();  
         }
 
         public Session GetSessionById(int id)
         {
-            return _context.Sessions.Include(s => s.User).First(s => s.Id == id);
+            return _context.Sessions.Include(s => s.User).Include(s => s.Licence).First(s => s.Id == id);
         }
 
 
@@ -43,6 +43,11 @@ namespace OddoBhf.Repositories
             _context.Sessions.Update(session);
             _context.SaveChanges();
 
+        }
+
+        public void SaveChanges()
+        {
+            _context.SaveChanges();
         }
 
 

@@ -49,8 +49,9 @@ namespace OddoBhf.Migrations
                     StartTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     UserNotes = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UserId = table.Column<int>(type: "int", nullable: true),
                     LicenceId = table.Column<int>(type: "int", nullable: true),
-                    UserId = table.Column<int>(type: "int", nullable: true)
+                    LicenceId1 = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -58,6 +59,11 @@ namespace OddoBhf.Migrations
                     table.ForeignKey(
                         name: "FK_Sessions_Licences_LicenceId",
                         column: x => x.LicenceId,
+                        principalTable: "Licences",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Sessions_Licences_LicenceId1",
+                        column: x => x.LicenceId1,
                         principalTable: "Licences",
                         principalColumn: "Id");
                     table.ForeignKey(
@@ -77,7 +83,14 @@ namespace OddoBhf.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Sessions_LicenceId",
                 table: "Sessions",
-                column: "LicenceId");
+                column: "LicenceId",
+                unique: true,
+                filter: "[LicenceId] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Sessions_LicenceId1",
+                table: "Sessions",
+                column: "LicenceId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Sessions_UserId",

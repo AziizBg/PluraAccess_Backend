@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OddoBhf.Data;
 
@@ -11,9 +12,11 @@ using OddoBhf.Data;
 namespace OddoBhf.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20240730111355_first")]
+    partial class first
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -35,6 +38,9 @@ namespace OddoBhf.Migrations
 
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Password")
                         .HasColumnType("nvarchar(max)");
@@ -62,6 +68,9 @@ namespace OddoBhf.Migrations
                     b.Property<int?>("LicenceId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("LicenceId1")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("StartTime")
                         .HasColumnType("datetime2");
 
@@ -76,6 +85,8 @@ namespace OddoBhf.Migrations
                     b.HasIndex("LicenceId")
                         .IsUnique()
                         .HasFilter("[LicenceId] IS NOT NULL");
+
+                    b.HasIndex("LicenceId1");
 
                     b.HasIndex("UserId");
 
@@ -111,6 +122,10 @@ namespace OddoBhf.Migrations
                         .WithOne("CurrentSession")
                         .HasForeignKey("OddoBhf.Models.Session", "LicenceId");
 
+                    b.HasOne("OddoBhf.Models.Licence", null)
+                        .WithMany("Sessions")
+                        .HasForeignKey("LicenceId1");
+
                     b.HasOne("OddoBhf.Models.User", "User")
                         .WithMany("Sessions")
                         .HasForeignKey("UserId");
@@ -121,6 +136,8 @@ namespace OddoBhf.Migrations
             modelBuilder.Entity("OddoBhf.Models.Licence", b =>
                 {
                     b.Navigation("CurrentSession");
+
+                    b.Navigation("Sessions");
                 });
 
             modelBuilder.Entity("OddoBhf.Models.Session", b =>

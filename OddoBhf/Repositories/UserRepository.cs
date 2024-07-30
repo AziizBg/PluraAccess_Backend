@@ -46,6 +46,11 @@ namespace OddoBhf.Repositories
 
         }
 
+        public void SaveChanges()
+        {
+            _context.SaveChanges();
+        }
+
 
 
 
