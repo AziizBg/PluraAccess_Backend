@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OddoBhf.Data;
+using OddoBhf.Dto;
 using OddoBhf.Interfaces;
 using OddoBhf.Models;
 
@@ -29,9 +30,16 @@ namespace OddoBhf.Repositories
 
         }
 
-        public ICollection<Licence> GetAllLicences()
+        public ICollection<GetLicenceDto> GetAllLicences()
         {
-            return _context.Licences.Include(l=>l.CurrentSession).ToList();
+            return _context.Licences.Include(l=>l.CurrentSession)
+                .Select(l=> new GetLicenceDto
+                {
+                    Id = l.Id,
+                    CurrentSession = l.CurrentSession,
+                    Email = l.Email
+                })
+                .ToList();
         }
 
         public Licence GetLicenceById(int id)

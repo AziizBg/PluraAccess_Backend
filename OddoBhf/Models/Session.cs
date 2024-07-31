@@ -9,11 +9,7 @@ namespace OddoBhf.Models
         public DateTime? EndTime { get; set; }
 
         public string? UserNotes { get; set; }
-//        public int? LicenceId { get; set; }
         public Licence? Licence { get; set; }
-
         public User? User { get; set; }
-//        public int? UserId { get; set; }
-
     }
 }

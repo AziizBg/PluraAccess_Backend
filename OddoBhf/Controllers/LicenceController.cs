@@ -114,17 +114,14 @@ namespace OddoBhf.Controllers
                     Session session = new Session
                     {
                         StartTime = DateTime.Now,
-//                        LicenceId = licence.Id,
                         Licence = licence,
                         User = user,
-                        //UserId = user.Id,
                         UserNotes = ""
                     };
                     Console.WriteLine("licence: ", licence);
                     Console.WriteLine("Session: ", session);
                     _sessionRepository.AddSession(session);
 
-  //                  licence.IsAvailable = false;
                     licence.CurrentSession = session;
 
                     _licenceRepository.UpdateLicence(licence);
@@ -173,7 +170,6 @@ namespace OddoBhf.Controllers
                     _sessionRepository.UpdateSession(currentSession);
 
 
-                    //                    licence.IsAvailable = true;
                     licence.CurrentSession = null;
                     _licenceRepository.UpdateLicence(licence);
                     return Ok(_sessionRepository.GetSessionById(currentSession.Id));
