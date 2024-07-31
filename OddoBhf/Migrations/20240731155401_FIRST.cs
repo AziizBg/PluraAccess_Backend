@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace OddoBhf.Migrations
 {
     /// <inheritdoc />
-    public partial class first : Migration
+    public partial class FIRST : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -32,7 +32,6 @@ namespace OddoBhf.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    IsAvailable = table.Column<bool>(type: "bit", nullable: false),
                     CurrentSessionId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
@@ -49,9 +48,8 @@ namespace OddoBhf.Migrations
                     StartTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     UserNotes = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    UserId = table.Column<int>(type: "int", nullable: true),
                     LicenceId = table.Column<int>(type: "int", nullable: true),
-                    LicenceId1 = table.Column<int>(type: "int", nullable: true)
+                    UserId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -59,11 +57,6 @@ namespace OddoBhf.Migrations
                     table.ForeignKey(
                         name: "FK_Sessions_Licences_LicenceId",
                         column: x => x.LicenceId,
-                        principalTable: "Licences",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Sessions_Licences_LicenceId1",
-                        column: x => x.LicenceId1,
                         principalTable: "Licences",
                         principalColumn: "Id");
                     table.ForeignKey(
@@ -86,11 +79,6 @@ namespace OddoBhf.Migrations
                 column: "LicenceId",
                 unique: true,
                 filter: "[LicenceId] IS NOT NULL");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Sessions_LicenceId1",
-                table: "Sessions",
-                column: "LicenceId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Sessions_UserId",

@@ -40,12 +40,13 @@ namespace OddoBhf.Data
             modelBuilder.Entity<Licence>()
                 .HasOne(l => l.CurrentSession)
                 .WithOne()
-                .HasForeignKey<Session>("LicenceId"); // Shadow property
+                .HasForeignKey<Licence>("CurrentSessionId"); // Shadow property
 
             modelBuilder.Entity<Session>()
-                .HasOne(s=> s.Licence)
-                .WithOne()
-                .HasForeignKey<Licence>("CurrentSessionId"); // Shadow property
+                .HasOne(s => s.Licence)
+                .WithMany();
+//                .HasForeignKey<Session>("LicenceId"); // Shadow property
+
 
             modelBuilder.Entity<Session>()
                 .HasOne(s => s.User)

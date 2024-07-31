@@ -114,6 +114,7 @@ namespace OddoBhf.Controllers
                     Session session = new Session
                     {
                         StartTime = DateTime.Now,
+                        EndTime = DateTime.Now.AddHours(2),
                         Licence = licence,
                         User = user,
                         UserNotes = ""

@@ -32,7 +32,7 @@ namespace OddoBhf.Repositories
 
         public ICollection<GetLicenceDto> GetAllLicences()
         {
-            return _context.Licences.Include(l=>l.CurrentSession)
+            return _context.Licences.Include(l=>l.CurrentSession).ThenInclude(s=>s.User)
                 .Select(l=> new GetLicenceDto
                 {
                     Id = l.Id,

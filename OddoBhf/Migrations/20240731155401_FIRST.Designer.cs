@@ -12,8 +12,8 @@ using OddoBhf.Data;
 namespace OddoBhf.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240730111355_first")]
-    partial class first
+    [Migration("20240731155401_FIRST")]
+    partial class FIRST
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -38,9 +38,6 @@ namespace OddoBhf.Migrations
 
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsAvailable")
-                        .HasColumnType("bit");
 
                     b.Property<string>("Password")
                         .HasColumnType("nvarchar(max)");
@@ -68,9 +65,6 @@ namespace OddoBhf.Migrations
                     b.Property<int?>("LicenceId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("LicenceId1")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("StartTime")
                         .HasColumnType("datetime2");
 
@@ -85,8 +79,6 @@ namespace OddoBhf.Migrations
                     b.HasIndex("LicenceId")
                         .IsUnique()
                         .HasFilter("[LicenceId] IS NOT NULL");
-
-                    b.HasIndex("LicenceId1");
 
                     b.HasIndex("UserId");
 
@@ -111,38 +103,26 @@ namespace OddoBhf.Migrations
 
             modelBuilder.Entity("OddoBhf.Models.Licence", b =>
                 {
-                    b.HasOne("OddoBhf.Models.Session", null)
-                        .WithOne("Licence")
+                    b.HasOne("OddoBhf.Models.Session", "CurrentSession")
+                        .WithOne()
                         .HasForeignKey("OddoBhf.Models.Licence", "CurrentSessionId");
+
+                    b.Navigation("CurrentSession");
                 });
 
             modelBuilder.Entity("OddoBhf.Models.Session", b =>
                 {
-                    b.HasOne("OddoBhf.Models.Licence", null)
-                        .WithOne("CurrentSession")
+                    b.HasOne("OddoBhf.Models.Licence", "Licence")
+                        .WithOne()
                         .HasForeignKey("OddoBhf.Models.Session", "LicenceId");
-
-                    b.HasOne("OddoBhf.Models.Licence", null)
-                        .WithMany("Sessions")
-                        .HasForeignKey("LicenceId1");
 
                     b.HasOne("OddoBhf.Models.User", "User")
                         .WithMany("Sessions")
                         .HasForeignKey("UserId");
 
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("OddoBhf.Models.Licence", b =>
-                {
-                    b.Navigation("CurrentSession");
-
-                    b.Navigation("Sessions");
-                });
-
-            modelBuilder.Entity("OddoBhf.Models.Session", b =>
-                {
                     b.Navigation("Licence");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("OddoBhf.Models.User", b =>
