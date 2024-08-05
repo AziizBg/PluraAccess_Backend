@@ -31,6 +31,10 @@ namespace OddoBhf.Repositories
         {
             return _context.Sessions.Include(s => s.User).Include(s=>s.Licence).ToList();  
         }
+        public ICollection<Session> GetSessionsByUserId(int user_id)
+        {
+            return _context.Sessions.Include(s => s.User).Where(s=>s.User.Id == user_id).ToList();
+        }
 
         public Session GetSessionById(int id)
         {

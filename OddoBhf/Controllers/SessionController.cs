@@ -31,6 +31,13 @@ namespace OddoBhf.Controllers
             return _sessionRepository.GetSessionById(id);
         }
 
+        // GET api/<SessionController>/5
+        [HttpGet("user/{user_id}")]
+        public ICollection<Session> GetSessionsByUserId(int user_id)
+        {
+            return _sessionRepository.GetSessionsByUserId(user_id);
+        }
+
         // POST api/<SessionController>
         [HttpPost]
         public void AddSession([FromBody] Session session)
@@ -40,9 +47,18 @@ namespace OddoBhf.Controllers
 
         // PUT api/<SessionController>/5
         [HttpPut("{id}")]
-        public void UpdateSession(int id, [FromBody] Session session)
+        public IActionResult UpdateSession(int id, [FromBody] Session session)
         {
-            _sessionRepository.UpdateSession(session);
+            Session old_session = _sessionRepository.GetSessionById(id);
+            if (old_session != null)
+            {
+                _sessionRepository.UpdateSession(session);
+                return Ok(old_session);
+            }
+            else
+            {
+                return NotFound();
+            }
         }
 
         // DELETE api/<SessionController>/5

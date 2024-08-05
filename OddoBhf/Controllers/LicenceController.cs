@@ -65,7 +65,7 @@ namespace OddoBhf.Controllers
             return NoContent();
         }
 
-        //GET: take licence
+        //POST: take licence
         [HttpPost("{id}/take")]
         [ProducesResponseType(200, Type=typeof(Licence))]
         public async Task<IActionResult> TakeLicence(int id, [FromBody] int UserId)
@@ -77,7 +77,6 @@ namespace OddoBhf.Controllers
             }
             if (licence.CurrentSession == null)
             {
-
                 try
                 {
                     var url = "http://127.0.0.1:5000/get_cookie";

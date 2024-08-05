@@ -15,7 +15,10 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddDbContext<DataContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnexion")));
+builder.Services.AddDbContext<DataContext>(options => { 
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnexion"));
+    options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+});
 builder.Services.AddScoped<ILicenceRepository, LicenceRepository>();
 builder.Services.AddScoped<ISessionRepository, SessionRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();

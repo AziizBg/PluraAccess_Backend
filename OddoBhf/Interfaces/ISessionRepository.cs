@@ -9,7 +9,9 @@ namespace OddoBhf.Interfaces
         void AddSession(Session session);
         void UpdateSession(Session session);
         void DeleteSession(int id);
-        public void SaveChanges();
+        void SaveChanges();
+        ICollection<Session> GetSessionsByUserId(int user_id);
+
 
 
     }
