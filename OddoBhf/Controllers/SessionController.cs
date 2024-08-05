@@ -49,16 +49,9 @@ namespace OddoBhf.Controllers
         [HttpPut("{id}")]
         public IActionResult UpdateSession(int id, [FromBody] Session session)
         {
-            Session old_session = _sessionRepository.GetSessionById(id);
-            if (old_session != null)
-            {
                 _sessionRepository.UpdateSession(session);
-                return Ok(old_session);
-            }
-            else
-            {
-                return NotFound();
-            }
+                return Ok(session);
+
         }
 
         // DELETE api/<SessionController>/5

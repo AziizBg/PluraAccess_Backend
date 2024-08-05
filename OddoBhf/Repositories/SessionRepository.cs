@@ -24,7 +24,9 @@ namespace OddoBhf.Repositories
         public void DeleteSession(int id)
         {
             var session = _context.Sessions.Find(id);
-            _context.Sessions.Remove(session);
+                _context.Sessions.Remove(session);
+            _context.SaveChanges();
+
         }
 
         public ICollection<Session> GetAllSessions()
