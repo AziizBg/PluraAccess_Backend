@@ -12,8 +12,8 @@ using OddoBhf.Data;
 namespace OddoBhf.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240731161722_edit_relation")]
-    partial class edit_relation
+    [Migration("20240806102027_first")]
+    partial class first
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -58,6 +58,9 @@ namespace OddoBhf.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Course")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("EndTime")
                         .HasColumnType("datetime2");
