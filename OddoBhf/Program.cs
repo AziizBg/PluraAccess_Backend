@@ -36,11 +36,10 @@ if (app.Environment.IsDevelopment())
 //CORS
 app.UseCors(options =>
 {
-    options.WithOrigins("http://localhost:4200");
-    options.AllowAnyMethod();
-    options.AllowAnyHeader();
+    options.AllowAnyOrigin()
+           .AllowAnyMethod()
+           .AllowAnyHeader();
 });
-
 
 app.UseHttpsRedirection();
 

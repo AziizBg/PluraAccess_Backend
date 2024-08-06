@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace OddoBhf.Migrations
 {
     /// <inheritdoc />
-    public partial class FIRST : Migration
+    public partial class first : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -47,6 +47,7 @@ namespace OddoBhf.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     StartTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Course = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserNotes = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LicenceId = table.Column<int>(type: "int", nullable: true),
                     UserId = table.Column<int>(type: "int", nullable: true)
@@ -76,9 +77,7 @@ namespace OddoBhf.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Sessions_LicenceId",
                 table: "Sessions",
-                column: "LicenceId",
-                unique: true,
-                filter: "[LicenceId] IS NOT NULL");
+                column: "LicenceId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Sessions_UserId",

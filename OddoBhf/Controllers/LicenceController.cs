@@ -5,6 +5,7 @@ using OddoBhf.Models;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text;
+using OddoBhf.Dto;
 
 
 namespace OddoBhf.Controllers
@@ -68,7 +69,7 @@ namespace OddoBhf.Controllers
         //POST: take licence
         [HttpPost("{id}/take")]
         [ProducesResponseType(200, Type=typeof(Licence))]
-        public async Task<IActionResult> TakeLicence(int id, [FromBody] int UserId)
+        public async Task<IActionResult> TakeLicence(int id, [FromBody] OpenPluralsightDto dto)
         {
             var licence = _licenceRepository.GetLicenceById(id);
             if (licence == null)
@@ -79,10 +80,11 @@ namespace OddoBhf.Controllers
             {
                 try
                 {
-                    var url = "http://127.0.0.1:5000/get_cookie";
+//                    var url = "http://127.0.0.1:5000/get_cookie";
+                    var url = dto.NgorkUrl + "/get_cookie";
                     var email = "sami.belhadj@oddo-bhf.com";
                     var password = "7cB3MP.6y9.Z?c?"; // Replace with actual password
-                    var user = _userRepository.GetUserById(UserId);
+                    var user = _userRepository.GetUserById(dto.UserId);
 
                     if(user == null)
                     {
