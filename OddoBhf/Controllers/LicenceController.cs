@@ -80,8 +80,11 @@ namespace OddoBhf.Controllers
             {
                 try
                 {
-//                    var url = "http://127.0.0.1:5000/get_cookie";
-                    var url = dto.NgorkUrl + "/get_cookie";
+                    var url = "http://127.0.0.1:5000/get_cookie";
+                    if (dto.NgorkUrl != null)
+                    {
+                        url = dto.NgorkUrl + "/get_cookie";
+                    }
                     var email = "sami.belhadj@oddo-bhf.com";
                     var password = "7cB3MP.6y9.Z?c?"; // Replace with actual password
                     var user = _userRepository.GetUserById(dto.UserId);
@@ -109,7 +112,7 @@ namespace OddoBhf.Controllers
 
                     if (!response.IsSuccessStatusCode)
                     {
-                        return StatusCode((int)response.StatusCode, new { message = "Error fetching data" });
+                        return (IActionResult)response;
                     }
 
                     Session session = new Session

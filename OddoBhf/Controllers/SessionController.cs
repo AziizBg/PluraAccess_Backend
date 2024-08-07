@@ -31,12 +31,10 @@ namespace OddoBhf.Controllers
             return _sessionRepository.GetSessionById(id);
         }
 
-        // GET api/<SessionController>/5
         [HttpGet("user/{user_id}")]
-        public ICollection<Session> GetSessionsByUserId(int user_id)
+        public async Task<ActionResult<PaginatedList<Session>>> GetSessionsByUserId(int user_id, int pageIndex = 1, int pageSize = 10)
         {
-            return _sessionRepository.GetSessionsByUserId(user_id);
-            //            return new ApiResponse(true, null, players);
+            return await _sessionRepository.GetSessionsByUserId(user_id, pageIndex, pageSize);
         }
 
         // POST api/<SessionController>

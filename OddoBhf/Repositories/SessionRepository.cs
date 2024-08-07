@@ -2,6 +2,7 @@
 using OddoBhf.Data;
 using OddoBhf.Interfaces;
 using OddoBhf.Models;
+using System.Numerics;
 
 namespace OddoBhf.Repositories
 {
@@ -31,12 +32,26 @@ namespace OddoBhf.Repositories
 
         public ICollection<Session> GetAllSessions()
         {
-            return _context.Sessions.Include(s => s.User).Include(s=>s.Licence).ToList();  
+            return _context.Sessions.Include(s => s.User).Include(s=>s.Licence).ToList();
         }
-        public ICollection<Session> GetSessionsByUserId(int user_id)
+
+        public async Task<PaginatedList<Session>> GetSessionsByUserId(int user_id, int pageIndex, int pageSize)
         {
-            return _context.Sessions.Include(s => s.User).Where(s=>s.User.Id == user_id).ToList();
+            var sessions = await _context.Sessions
+                .Include(s => s.User)
+                .Where(s => s.User.Id == user_id)
+                .OrderByDescending(b => b.EndTime)
+                .Skip(pageIndex  * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var length = await _context.Sessions.Include(s => s.User)
+                .Where(s => s.User.Id == user_id).CountAsync();
+            var totalPages = (int)Math.Ceiling(length / (double)pageSize);
+
+            return new PaginatedList<Session>(sessions, pageIndex, totalPages, length);
         }
+
 
         public Session GetSessionById(int id)
         {
