@@ -36,6 +36,7 @@ namespace OddoBhf.Controllers
         public ICollection<Session> GetSessionsByUserId(int user_id)
         {
             return _sessionRepository.GetSessionsByUserId(user_id);
+            //            return new ApiResponse(true, null, players);
         }
 
         // POST api/<SessionController>
