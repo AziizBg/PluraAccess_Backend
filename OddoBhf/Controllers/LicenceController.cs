@@ -88,8 +88,14 @@ namespace OddoBhf.Controllers
                     var email = "sami.belhadj@oddo-bhf.com";
                     var password = "7cB3MP.6y9.Z?c?"; // Replace with actual password
                     var user = _userRepository.GetUserById(dto.UserId);
+                    var startTime = DateTime.Now;
+/*                    var endTime = DateTime.Now.AddHours(2);
+*/                    var endTime = DateTime.Now.AddMinutes(1);
+                    var formattedEndTime = endTime;
 
-                    if(user == null)
+                    var licenceId = licence.Id;
+
+                    if (user == null)
                     {
                         return StatusCode(StatusCodes.Status404NotFound, new { message = "user not provided" });
                     }
@@ -98,7 +104,9 @@ namespace OddoBhf.Controllers
                     var payload = new
                     {
                         email,
-                        password
+                        password,
+                        formattedEndTime,
+                        licenceId
                     };
 
                     // Serialize the payload to JSON
@@ -117,8 +125,8 @@ namespace OddoBhf.Controllers
 
                     Session session = new Session
                     {
-                        StartTime = DateTime.Now,
-                        EndTime = DateTime.Now.AddHours(2),
+                        StartTime = startTime,
+                        EndTime = endTime,
                         Licence = licence,
                         User = user,
                         UserNotes = ""
@@ -150,6 +158,7 @@ namespace OddoBhf.Controllers
         [ProducesResponseType(200, Type = typeof(Licence))]
         public async Task<IActionResult> ReturnLicence(int id)
         {
+            Console.WriteLine("========================================================");
             var licence = _licenceRepository.GetLicenceById(id);
             if (licence == null)
             {
@@ -180,7 +189,7 @@ namespace OddoBhf.Controllers
                     return Ok(_sessionRepository.GetSessionById(currentSession.Id));
 
 
-                    return Ok(licence);
+//                    return Ok(licence);
 
                 }
                 catch (Exception ex)
