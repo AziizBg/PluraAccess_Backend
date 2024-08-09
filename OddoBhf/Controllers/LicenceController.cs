@@ -154,11 +154,10 @@ namespace OddoBhf.Controllers
         }
 
         //GET: return licence
-        [HttpGet("{id}/return")]
+        [HttpPost("{id}/return")]
         [ProducesResponseType(200, Type = typeof(Licence))]
-        public async Task<IActionResult> ReturnLicence(int id)
+        public async Task<IActionResult> ReturnLicence(int id, [FromBody]ReturnLicenceDto dto)
         {
-            Console.WriteLine("========================================================");
             var licence = _licenceRepository.GetLicenceById(id);
             if (licence == null)
             {
@@ -171,13 +170,16 @@ namespace OddoBhf.Controllers
 
                 try
                 {
-                    var response = await _httpClient.GetAsync("http://127.0.0.1:5000/close");
-
-                    if (!response.IsSuccessStatusCode)
+                    if (dto.isBrowserClosed == false)
                     {
-                        //      return StatusCode((int)response.StatusCode, new { message = "Error fetching data" });
-                    }
+                        var response = await _httpClient.GetAsync("http://127.0.0.1:5000/close");
 
+
+                        if (!response.IsSuccessStatusCode)
+                        {
+                            //      return StatusCode((int)response.StatusCode, new { message = "Error fetching data" });
+                        }
+                    }
                     currentSession.EndTime = DateTime.Now;
                     currentSession.Licence = licence;
 
