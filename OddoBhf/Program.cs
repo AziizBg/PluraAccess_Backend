@@ -2,6 +2,7 @@ using OddoBhf.Data;
 using Microsoft.EntityFrameworkCore;
 using OddoBhf.Interfaces;
 using OddoBhf.Repositories;
+using OddoBhf.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,12 +16,17 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+// add DB context
 builder.Services.AddDbContext<DataContext>(options => { 
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnexion"));
 });
+// add repositories
 builder.Services.AddScoped<ILicenceRepository, LicenceRepository>();
 builder.Services.AddScoped<ISessionRepository, SessionRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+// add services
+builder.Services.AddScoped<ILicenceService, LicenceService>();
+
 builder.Services.AddHttpClient();
 
 var app = builder.Build();
