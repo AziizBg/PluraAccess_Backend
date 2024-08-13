@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text;
 using OddoBhf.Dto;
 using OddoBhf.Services;
+using OddoBhf.Dto.Licence;
 
 
 namespace OddoBhf.Controllers
@@ -43,8 +44,9 @@ namespace OddoBhf.Controllers
         //POST: LicenceController 
         [HttpPost]
         [ProducesResponseType(201, Type=typeof(Licence))]
-        public IActionResult CreateLicence([FromBody] Licence licence)
+        public IActionResult CreateLicence([FromBody] CreateLicenceDto dto)
         {
+            var licence = new Licence { Email = dto.Email, Password=dto.Password };
             _licenceService.CreateLicence(licence);
             return CreatedAtAction("GetLicences", new { id = licence.Id }, licence);
         }
@@ -52,12 +54,13 @@ namespace OddoBhf.Controllers
         //PUT: LicenceController
         [HttpPut("{id}")]
         [ProducesResponseType(204)]
-        public IActionResult UpdateLicence(int id, [FromBody] Licence licence)
+        public IActionResult UpdateLicence(int id, [FromBody] CreateLicenceDto dto)
         {
-            if (id != licence.Id)
+            if (dto == null)
             {
                 return BadRequest();
             }
+            var licence = new Licence { Id=id,Email = dto.Email, Password = dto.Password };
             _licenceService.UpdateLicence(licence);
             return NoContent();
         }
