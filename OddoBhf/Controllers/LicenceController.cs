@@ -102,5 +102,17 @@ namespace OddoBhf.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
+        [HttpDelete("{id}")]
+        public IActionResult Deletelicence(int id)
+        {
+            var licence = _licenceService.GetLicenceById(id);
+            if (licence == null)
+            {
+                return NotFound(); // 404 if the licence doesn't exist
+            }
+            _licenceService.DeleteLicence(id);
+            return NoContent(); // 204 if the licence was successfully deleted
+        }
     }
 }

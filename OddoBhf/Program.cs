@@ -26,6 +26,8 @@ builder.Services.AddScoped<ISessionRepository, SessionRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 // add services
 builder.Services.AddScoped<ILicenceService, LicenceService>();
+builder.Services.AddScoped<ISessionService, SessionService>();
+
 
 builder.Services.AddHttpClient();
 

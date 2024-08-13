@@ -12,13 +12,13 @@ namespace OddoBhf.Services
     public class LicenceService:ILicenceService
     {
         private readonly ILicenceRepository _licenceRepository;
-        private readonly ISessionRepository _sessionRepository;
+        private readonly ISessionService _sessionService;
         private readonly IUserRepository _userRepository;
         private readonly HttpClient _httpClient;
 
-        public LicenceService(ILicenceRepository licenceRepository, ISessionRepository sessionRepository, IUserRepository userRepository, HttpClient httpClient) {
+        public LicenceService(ILicenceRepository licenceRepository, ISessionService sessionService, IUserRepository userRepository, HttpClient httpClient) {
             _licenceRepository = licenceRepository;
-            _sessionRepository = sessionRepository;
+            _sessionService = sessionService;
             _userRepository = userRepository;
             _httpClient = httpClient;
         }
@@ -39,6 +39,10 @@ namespace OddoBhf.Services
         public void UpdateLicence( Licence licence)
         {
             _licenceRepository.UpdateLicence(licence);
+        }
+        public void DeleteLicence(int id)
+        {
+            _licenceRepository.DeleteLicence(id);
         }
 
         public async Task<Licence> TakeLicence(int id, OpenPluralsightDto dto)
@@ -82,7 +86,7 @@ namespace OddoBhf.Services
                     UserNotes = ""
                 };
 
-                _sessionRepository.AddSession(session);
+                _sessionService.AddSession(session);
                 licence.CurrentSession = session;
                 _licenceRepository.UpdateLicence(licence);
 
@@ -102,7 +106,7 @@ namespace OddoBhf.Services
                 return null;
             }
 
-            var currentSession = _sessionRepository.GetSessionById(licence.CurrentSession.Id);
+            var currentSession = _sessionService.GetSessionById(licence.CurrentSession.Id);
 
             try
             {
@@ -119,7 +123,7 @@ namespace OddoBhf.Services
                 currentSession.EndTime = DateTime.Now;
                 currentSession.Licence = licence;
 
-                _sessionRepository.UpdateSession(currentSession);
+                _sessionService.UpdateSession(currentSession);
 
                 licence.CurrentSession = null;
                 _licenceRepository.UpdateLicence(licence);
