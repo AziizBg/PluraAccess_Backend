@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using OddoBhf.Interfaces;
 using OddoBhf.Repositories;
 using OddoBhf.Services;
+using OddoBhf.Hub;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +33,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 
 
 builder.Services.AddHttpClient();
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -53,7 +55,8 @@ app.UseCors(options =>
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
-
+//map incoming client requests to the proper Hub and give it the route "Notify"
+app.MapHub<NotificationHub>("/Notify");
 app.MapControllers();
 
 app.Run();

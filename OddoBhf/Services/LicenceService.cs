@@ -6,6 +6,8 @@ using OddoBhf.Models;
 using System.Text.Json;
 using System.Text;
 using System.Net.Http;
+using Microsoft.AspNetCore.SignalR;
+using OddoBhf.Hub;
 
 namespace OddoBhf.Services
 {
@@ -15,12 +17,15 @@ namespace OddoBhf.Services
         private readonly ISessionService _sessionService;
         private readonly IUserRepository _userRepository;
         private readonly HttpClient _httpClient;
+        private readonly IHubContext<NotificationHub, INotificationHub> _notification;
 
-        public LicenceService(ILicenceRepository licenceRepository, ISessionService sessionService, IUserRepository userRepository, HttpClient httpClient) {
+
+        public LicenceService(ILicenceRepository licenceRepository, ISessionService sessionService, IUserRepository userRepository, HttpClient httpClient, IHubContext<NotificationHub, INotificationHub> hubContext) {
             _licenceRepository = licenceRepository;
             _sessionService = sessionService;
             _userRepository = userRepository;
             _httpClient = httpClient;
+            _notification= hubContext;
         }
         public Licence GetLicenceById(int id)
         {
@@ -89,6 +94,12 @@ namespace OddoBhf.Services
                 _sessionService.AddSession(session);
                 licence.CurrentSession = session;
                 _licenceRepository.UpdateLicence(licence);
+                await _notification.Clients.All.SendMessage(new Notification
+                {
+                    CreatedAt = DateTime.Now,
+                    Title = "Licence Taken",
+                    Message = user.Name + " has taken licence number " + licence.Id
+                });
 
                 return licence;
             }
@@ -127,6 +138,12 @@ namespace OddoBhf.Services
 
                 licence.CurrentSession = null;
                 _licenceRepository.UpdateLicence(licence);
+                await _notification.Clients.All.SendMessage(new Notification
+                {
+                    CreatedAt = DateTime.Now,
+                    Title = "Licence Returned",
+                    Message = currentSession?.User?.Name + " has returned licence number " + licence.Id
+                });
 
                 return currentSession;
             }
