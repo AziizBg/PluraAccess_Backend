@@ -68,6 +68,18 @@ namespace OddoBhf.Services
                 {
                     throw new Exception("User not provided");
                 }
+                licence.CurrentSession = new Session
+                {
+                    StartTime = DateTime.Now
+                };
+                _licenceRepository.UpdateLicence(licence);
+                await _notification.Clients.All.SendMessage(new Notification
+                {
+                    Title = "Licence Requested",
+                    Message = user.Name + " has requested licence number " + licence.Id,
+                    UserId = user.Id,
+                });
+
 
                 var startTime = DateTime.Now;
                 var endTime = DateTime.Now.AddHours(2);
@@ -75,13 +87,8 @@ namespace OddoBhf.Services
                 var jsonPayload = JsonSerializer.Serialize(payload);
                 var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
+
                 var response = await _httpClient.PostAsync(url, content);
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    throw new Exception("Local server failed to start the browser");
-                }
-
                 var session = new Session
                 {
                     StartTime = startTime,
@@ -96,15 +103,23 @@ namespace OddoBhf.Services
                 _licenceRepository.UpdateLicence(licence);
                 await _notification.Clients.All.SendMessage(new Notification
                 {
-                    CreatedAt = DateTime.Now,
-                    Title = "Licence Taken",
-                    Message = user.Name + " has taken licence number " + licence.Id
+/*                    CreatedAt = DateTime.Now,
+*/                    Title = "Licence Taken",
+                    Message = user.Name + " has taken licence number " + licence.Id,
+                    UserId =user.Id,
                 });
 
                 return licence;
             }
             catch (Exception ex)
             {
+                licence.CurrentSession = null;
+                _licenceRepository.UpdateLicence(licence);
+                await _notification.Clients.All.SendMessage(new Notification
+                {
+                    Title = "Licence Request Failed",
+                    Message = "Request for 'licence number " + licence.Id + " failed",
+                });
                 throw new Exception($"An error occurred: {ex.Message}");
             }
         }
@@ -142,7 +157,8 @@ namespace OddoBhf.Services
                 {
                     CreatedAt = DateTime.Now,
                     Title = "Licence Returned",
-                    Message = currentSession?.User?.Name + " has returned licence number " + licence.Id
+                    Message = currentSession?.User?.Name + " has returned licence number " + licence.Id,
+                    UserId = currentSession?.User?.Id,
                 });
 
                 return currentSession;
