@@ -45,7 +45,30 @@ namespace OddoBhf.Migrations
                         .IsUnique()
                         .HasFilter("[CurrentSessionId] IS NOT NULL");
 
-                    b.ToTable("Licences");
+                    b.ToTable("Licences", (string)null);
+                });
+
+            modelBuilder.Entity("OddoBhf.Models.Queue", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("RequesteddAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasFilter("[UserId] IS NOT NULL");
+
+                    b.ToTable("Queue", (string)null);
                 });
 
             modelBuilder.Entity("OddoBhf.Models.Session", b =>
@@ -80,7 +103,7 @@ namespace OddoBhf.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Sessions");
+                    b.ToTable("Sessions", (string)null);
                 });
 
             modelBuilder.Entity("OddoBhf.Models.User", b =>
@@ -96,7 +119,7 @@ namespace OddoBhf.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("OddoBhf.Models.Licence", b =>
@@ -106,6 +129,15 @@ namespace OddoBhf.Migrations
                         .HasForeignKey("OddoBhf.Models.Licence", "CurrentSessionId");
 
                     b.Navigation("CurrentSession");
+                });
+
+            modelBuilder.Entity("OddoBhf.Models.Queue", b =>
+                {
+                    b.HasOne("OddoBhf.Models.User", "User")
+                        .WithOne()
+                        .HasForeignKey("OddoBhf.Models.Queue", "UserId");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("OddoBhf.Models.Session", b =>

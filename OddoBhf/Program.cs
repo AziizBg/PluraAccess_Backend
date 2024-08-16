@@ -25,10 +25,14 @@ builder.Services.AddDbContext<DataContext>(options => {
 builder.Services.AddScoped<ILicenceRepository, LicenceRepository>();
 builder.Services.AddScoped<ISessionRepository, SessionRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IQueueRepository, QueueRepository>();
+
 // add services
 builder.Services.AddScoped<ILicenceService, LicenceService>();
 builder.Services.AddScoped<ISessionService, SessionService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IQueueService, QueueService>();
+
 
 
 

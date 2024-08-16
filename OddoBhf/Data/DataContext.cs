@@ -13,44 +13,30 @@ namespace OddoBhf.Data
         public DbSet<Licence> Licences { get; set; }
         public DbSet<Session> Sessions { get; set; }
         public DbSet<User> Users { get; set; }
-
-        /*        protected override void OnModelCreating(ModelBuilder modelBuilder)
-                {
-                    modelBuilder.Entity<Licence>()
-                        .HasMany(l => l.Sessions)
-                        .WithOne(s => s.Licence)
-                        .HasForeignKey(s => s.LicenceId);
-
-                    modelBuilder.Entity<Licence>()
-                        .HasOne(l => l.CurrentSession)
-                        .WithOne()
-                        .HasForeignKey<Licence>(l => l.CurrentSessionId);
-
-                    modelBuilder.Entity<Session>()
-                        .HasOne(s => s.User)
-                        .WithMany(u => u.Sessions)
-                        .HasForeignKey(s => s.UserId);
-
-
-                    base.OnModelCreating(modelBuilder);
-                }*/
-
+        public DbSet<Queue> Queue { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            //Licence has current session
             modelBuilder.Entity<Licence>()
                 .HasOne(l => l.CurrentSession)
                 .WithOne()
                 .HasForeignKey<Licence>("CurrentSessionId"); // Shadow property
 
+            //Session has Licence
             modelBuilder.Entity<Session>()
                 .HasOne(s => s.Licence)
                 .WithMany();
-//                .HasForeignKey<Session>("LicenceId"); // Shadow property
 
-
+            //Session has User
             modelBuilder.Entity<Session>()
                 .HasOne(s => s.User)
                 .WithMany(u => u.Sessions);
+
+            //Queue has User
+            modelBuilder.Entity<Queue>()
+                .HasOne(q => q.User)
+                .WithOne()
+                .HasForeignKey<Queue>("UserId");
 
             base.OnModelCreating(modelBuilder);
         }
