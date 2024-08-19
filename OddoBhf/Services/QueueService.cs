@@ -21,12 +21,24 @@ namespace OddoBhf.Services
         {
             return _queueRepository.GetById(id);
         }
+        public Queue GetByUserId(int id)
+        {
+            return _queueRepository.GetByUserId(id);
+        }
 
         public void Add(Queue queue)
         {
             _queueRepository.Add(queue);
         }
-        public void Update(Queue queue)
+        public bool IsUserInQueue(int userId)
+        {
+            return _queueRepository.IsUserInQueue(userId);
+        }
+        public int GetPosition(int userId)
+        {
+            return _queueRepository.GetPosition(userId);
+        }
+            public void Update(Queue queue)
         {
             _queueRepository.Update(queue);
 
@@ -34,6 +46,11 @@ namespace OddoBhf.Services
         public void Delete(int id)
         {
             _queueRepository.Delete(id);
+        }
+        public void RemoveUser(int id)
+        {
+            var queue = _queueRepository.GetByUserId(id);
+            _queueRepository.Delete(queue.Id);
         }
     }
 }
