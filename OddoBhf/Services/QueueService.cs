@@ -33,12 +33,14 @@ namespace OddoBhf.Services
         public void Add(Queue queue)
         {
             _queueRepository.Add(queue);
-            _notification.Clients.All.SendMessage(new Notification
+            _notification.Groups.AddToGroupAsync(queue.User.ConnectionId, "QueueGroup");
+            _notification.Clients.Group("QueueGroup")
+                .SendMessage(new Notification
             {
                 Message = "User added to the queue",
                 Title = "Queue Extended",
-                UserId= queue.Id
-            });
+                UserId = queue.User.Id,
+                });
         }
         public bool IsUserInQueue(int userId)
         {
@@ -70,6 +72,15 @@ namespace OddoBhf.Services
         {
             var queue = _queueRepository.GetByUserId(id);
             _queueRepository.Delete(queue.Id);
+            _notification.Groups.RemoveFromGroupAsync(queue.User.ConnectionId, "QueueGroup");
+            _notification.Clients.Group("QueueGroup")
+                .SendMessage(new Notification
+                {
+                    Message = "User removed from the queue",
+                    Title = "Queue Shortened",
+                    UserId = queue.User.Id,
+
+                });
         }
     }
 }
