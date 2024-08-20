@@ -157,7 +157,7 @@ namespace OddoBhf.Services
                 var queue = _queueService.GetFirst();
                 if (queue != null)
                 {
-                    await _notification.Clients.All.SendMessage(new Notification
+                    await _notification.Clients.Client(queue.User.ConnectionId).SendMessage(new Notification
                     {
                         CreatedAt = DateTime.Now,
                         Title = "Queue",

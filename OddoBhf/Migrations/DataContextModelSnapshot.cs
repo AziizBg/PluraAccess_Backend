@@ -45,7 +45,7 @@ namespace OddoBhf.Migrations
                         .IsUnique()
                         .HasFilter("[CurrentSessionId] IS NOT NULL");
 
-                    b.ToTable("Licences", (string)null);
+                    b.ToTable("Licences");
                 });
 
             modelBuilder.Entity("OddoBhf.Models.Queue", b =>
@@ -56,7 +56,7 @@ namespace OddoBhf.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime?>("RequesteddAt")
+                    b.Property<DateTime?>("RequestedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<int?>("UserId")
@@ -68,7 +68,7 @@ namespace OddoBhf.Migrations
                         .IsUnique()
                         .HasFilter("[UserId] IS NOT NULL");
 
-                    b.ToTable("Queue", (string)null);
+                    b.ToTable("Queue");
                 });
 
             modelBuilder.Entity("OddoBhf.Models.Session", b =>
@@ -103,7 +103,7 @@ namespace OddoBhf.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Sessions", (string)null);
+                    b.ToTable("Sessions");
                 });
 
             modelBuilder.Entity("OddoBhf.Models.User", b =>
@@ -114,12 +114,15 @@ namespace OddoBhf.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("ConnectionId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("OddoBhf.Models.Licence", b =>
