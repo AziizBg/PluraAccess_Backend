@@ -8,14 +8,13 @@ namespace OddoBhf.Interfaces
         public ICollection<Queue> GetAll();
         public Queue GetById(int id);
         public Queue GetByUserId(int id);
-
         public void Add(Queue queue);
         public bool IsUserInQueue(int userId);
         public int GetPosition(int userId);
-
+        public Queue GetFirst();
+        public void RemoveFirst();
 
         public void Update(Queue queue);
-        
         public void Delete(int id);
         public void RemoveUser(int id);
 

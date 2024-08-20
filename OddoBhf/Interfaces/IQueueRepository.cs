@@ -9,17 +9,11 @@ namespace OddoBhf.Interfaces
 
         public bool IsUserInQueue(int userId);
         public int GetPosition(int userId);
-
-
-
+        public Queue GetFirst();
         public void Delete(int id);
-
         public ICollection<Queue> GetAll();
         public Queue GetById(int id);
         public Queue GetByUserId(int id);
-
-
-
 
         public void Update(Queue queue);
 

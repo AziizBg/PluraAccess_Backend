@@ -17,7 +17,7 @@ namespace OddoBhf.Interfaces
 
         public void UpdateLicence(Licence licence);
 
-        public  Task<Licence> TakeLicence(int id, OpenPluralsightDto dto);
+        public  Task<Licence> TakeLicence(int id, OpenPluralsightDto dto, bool fromQueue);
         public  Task<Session> ReturnLicence(int id, ReturnLicenceDto dto);
         public void DeleteLicence(int id);
     }

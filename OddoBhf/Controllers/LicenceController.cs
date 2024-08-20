@@ -72,7 +72,7 @@ namespace OddoBhf.Controllers
         {
             try
             {
-                var licence = await _licenceService.TakeLicence(id, dto);
+                var licence = await _licenceService.TakeLicence(id, dto, false);
                 if (licence == null)
                 {
                     return BadRequest("Licence is not available or user not found");

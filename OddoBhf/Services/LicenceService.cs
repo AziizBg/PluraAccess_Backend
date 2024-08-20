@@ -15,14 +15,16 @@ namespace OddoBhf.Services
     {
         private readonly ILicenceRepository _licenceRepository;
         private readonly ISessionService _sessionService;
+        private readonly IQueueService _queueService;
         private readonly IUserRepository _userRepository;
         private readonly HttpClient _httpClient;
         private readonly IHubContext<NotificationHub, INotificationHub> _notification;
 
 
-        public LicenceService(ILicenceRepository licenceRepository, ISessionService sessionService, IUserRepository userRepository, HttpClient httpClient, IHubContext<NotificationHub, INotificationHub> hubContext) {
+        public LicenceService(ILicenceRepository licenceRepository, ISessionService sessionService,IQueueService queueService, IUserRepository userRepository, HttpClient httpClient, IHubContext<NotificationHub, INotificationHub> hubContext) {
             _licenceRepository = licenceRepository;
             _sessionService = sessionService;
+            _queueService = queueService;
             _userRepository = userRepository;
             _httpClient = httpClient;
             _notification= hubContext;
@@ -50,10 +52,10 @@ namespace OddoBhf.Services
             _licenceRepository.DeleteLicence(id);
         }
 
-        public async Task<Licence> TakeLicence(int id, OpenPluralsightDto dto)
+        public async Task<Licence> TakeLicence(int id, OpenPluralsightDto dto, bool fromQueue)
         {
             var licence = _licenceRepository.GetLicenceById(id);
-            if (licence == null || licence.CurrentSession != null)
+            if (licence == null || licence.CurrentSession != null && fromQueue==false)
             {
                 return null;
             }
@@ -109,6 +111,8 @@ namespace OddoBhf.Services
                     UserId =user.Id,
                 });
 
+                if (fromQueue) _queueService.RemoveUser(user.Id);
+
                 return licence;
             }
             catch (Exception ex)
@@ -136,7 +140,7 @@ namespace OddoBhf.Services
 
             try
             {
-                if (dto.isBrowserClosed==false)
+                if (dto.isBrowserClosed == false)
                 {
                     var response = await _httpClient.GetAsync("http://127.0.0.1:5000/close");
 
@@ -148,11 +152,26 @@ namespace OddoBhf.Services
 
                 currentSession.EndTime = DateTime.Now;
                 currentSession.Licence = licence;
-
                 _sessionService.UpdateSession(currentSession);
 
-                licence.CurrentSession = null;
-                _licenceRepository.UpdateLicence(licence);
+                var queue = _queueService.GetFirst();
+                if (queue != null)
+                {
+                    await _notification.Clients.All.SendMessage(new Notification
+                    {
+                        CreatedAt = DateTime.Now,
+                        Title = "Queue",
+                        Message = "You are now first in the queue",
+                        UserId = queue.User.Id
+                    });
+                    var openDto = new OpenPluralsightDto { UserId = queue.User.Id };
+                    await TakeLicence(id, openDto, true);
+                }
+                else
+                {
+                    licence.CurrentSession = null;
+                    _licenceRepository.UpdateLicence(licence);
+                }
                 await _notification.Clients.All.SendMessage(new Notification
                 {
                     CreatedAt = DateTime.Now,

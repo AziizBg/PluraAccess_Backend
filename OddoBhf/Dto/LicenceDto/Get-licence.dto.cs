@@ -6,6 +6,6 @@ namespace OddoBhf.Dto
     {
         public int Id { get; set; }
         public string? Email { get; set; }
-        public Session? CurrentSession { get; set; }
+        public Models.Session? CurrentSession { get; set; }
     }
 }

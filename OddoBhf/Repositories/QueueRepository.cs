@@ -17,10 +17,8 @@ namespace OddoBhf.Repositories
 
         public void Add(Queue queue)
         {
-
             _context.Queue.Add(queue);
             _context.SaveChanges();
-
         }
 
         public bool IsUserInQueue(int userId)
@@ -44,7 +42,6 @@ namespace OddoBhf.Repositories
             var queue= _context.Queue.Find(id);
             _context.Queue.Remove(queue);
             _context.SaveChanges();
-
         }
 
         public ICollection<Queue> GetAll()
@@ -54,6 +51,10 @@ namespace OddoBhf.Repositories
         public Queue GetById(int id)
         {
             return _context.Queue.Include(q => q.User).First(s => s.Id == id);
+        }
+        public Queue GetFirst()
+        {
+            return _context.Queue.Include(q => q.User).OrderBy(q => q.RequestedAt).First();
         }
         public Queue GetByUserId(int id)
         {
