@@ -6,5 +6,6 @@ namespace OddoBhf.Dto
     {
         public int UserId { get; set; }
         public string? NgorkUrl { get; set; }
+        public bool? FromQueue { get; set; }
     }
 }

@@ -52,45 +52,49 @@ namespace OddoBhf.Services
             _licenceRepository.DeleteLicence(id);
         }
 
-        public async Task<Licence> TakeLicence(int id, OpenPluralsightDto dto, bool fromQueue)
+        public async Task<Licence> TakeLicence(int id, OpenPluralsightDto dto)
         {
+            //check if the licence exists and has no current session only if fromQueue = true
             var licence = _licenceRepository.GetLicenceById(id);
-            if (licence == null || licence.CurrentSession != null && fromQueue==false)
+            if (licence == null || licence.CurrentSession != null && dto.FromQueue==false)
             {
                 return null;
+            }
+
+            //check if the user is given and exists
+            var user = _userRepository.GetUserById(dto.UserId);
+            if (user == null)
+            {
+                throw new Exception("User not provided");
             }
 
             try
             {
                 var url = dto.NgorkUrl != null ? dto.NgorkUrl + "/get_cookie" : "http://127.0.0.1:5000/get_cookie";
                 var email = "sami.belhadj@oddo-bhf.com";
-                var password = "7cB3MP.6y9.Z?c?"; // Remplacez par le vrai mot de passe
-                var user = _userRepository.GetUserById(dto.UserId);
-                if (user == null)
-                {
-                    throw new Exception("User not provided");
-                }
-                licence.CurrentSession = new Session
-                {
-                    StartTime = DateTime.Now
-                };
+                var password = "7cB3MP.6y9.Z?c?";
+
+                //licence being requested to disable other requests for it 
+                licence.IsBeingRequested = true;
                 _licenceRepository.UpdateLicence(licence);
+
+                // send licence requested notification to disable taking this licence from everyone
                 await _notification.Clients.All.SendMessage(new Notification
                 {
                     Title = "Licence Requested",
                     Message = user.Name + " has requested licence number " + licence.Id,
                     UserId = user.Id,
                 });
-
-
-                var startTime = DateTime.Now;
-                var endTime = DateTime.Now.AddHours(2);
-                var payload = new { email, password, formattedEndTime = endTime, licenceId = licence.Id };
+                
+                //send request to the flask server to open pluralsight
+                var payload = new { email, password, formattedEndTime = DateTime.Now.AddHours(2), licenceId = licence.Id };
                 var jsonPayload = JsonSerializer.Serialize(payload);
                 var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
-
-
                 var response = await _httpClient.PostAsync(url, content);
+
+                //create the actual session if the flask resquest is succeeded
+                var startTime = DateTime.Now;
+                var endTime = DateTime.Now.AddHours(2);
                 var session = new Session
                 {
                     StartTime = startTime,
@@ -99,26 +103,37 @@ namespace OddoBhf.Services
                     User = user,
                     UserNotes = ""
                 };
-
                 _sessionService.AddSession(session);
+
                 licence.CurrentSession = session;
+                licence.IsBeingRequested = false;
                 _licenceRepository.UpdateLicence(licence);
+
+                //send licence taken notification 
                 await _notification.Clients.All.SendMessage(new Notification
                 {
-/*                    CreatedAt = DateTime.Now,
-*/                    Title = "Licence Taken",
+                    CreatedAt = DateTime.Now,
+                    Title = "Licence Taken",
                     Message = user.Name + " has taken licence number " + licence.Id,
                     UserId =user.Id,
                 });
 
-                if (fromQueue) _queueService.RemoveUser(user.Id);
+                //remove the user from the queue if he was waiting
+                if (dto.FromQueue==true) _queueService.RemoveUser(user.Id);
 
                 return licence;
             }
             catch (Exception ex)
             {
-                licence.CurrentSession = null;
+                //delete the created session
+                var session = licence.CurrentSession;
+                _sessionService.DeleteSession(session.Id);
+                
+                //liberate the licence
+                licence.IsBeingRequested = false;
                 _licenceRepository.UpdateLicence(licence);
+                
+                //send notification
                 await _notification.Clients.All.SendMessage(new Notification
                 {
                     Title = "Licence Request Failed",
@@ -130,6 +145,7 @@ namespace OddoBhf.Services
 
         public async Task<Session> ReturnLicence(int id, ReturnLicenceDto dto)
         {
+            //check if licence exists and has a currentSession
             var licence = _licenceRepository.GetLicenceById(id);
             if (licence == null || licence.CurrentSession == null)
             {
@@ -140,6 +156,7 @@ namespace OddoBhf.Services
 
             try
             {
+                //if browser is not closed yet
                 if (dto.isBrowserClosed == false)
                 {
                     var response = await _httpClient.GetAsync("http://127.0.0.1:5000/close");
@@ -149,29 +166,29 @@ namespace OddoBhf.Services
                         throw new Exception("Failed to close the browser session");
                     }
                 }
-
+                //end session
                 currentSession.EndTime = DateTime.Now;
                 currentSession.Licence = licence;
                 _sessionService.UpdateSession(currentSession);
 
+                // send notification to the first in the queue if its not empty
                 var queue = _queueService.GetFirst();
                 if (queue != null)
                 {
                     await _notification.Clients.Client(queue.User.ConnectionId).SendMessage(new Notification
                     {
                         CreatedAt = DateTime.Now,
-                        Title = "Queue",
-                        Message = "You are now first in the queue",
-                        UserId = queue.User.Id
+                        Title = "First in queue",
+                        Message = "Click to take the licence",
+                        UserId = queue.User.Id,
+                        LicenceId = id
                     });
-                    var openDto = new OpenPluralsightDto { UserId = queue.User.Id };
-                    await TakeLicence(id, openDto, true);
+                    licence.IsBeingRequested = true;
                 }
-                else
-                {
-                    licence.CurrentSession = null;
-                    _licenceRepository.UpdateLicence(licence);
-                }
+                
+                licence.CurrentSession = null;
+                _licenceRepository.UpdateLicence(licence);
+                
                 await _notification.Clients.All.SendMessage(new Notification
                 {
                     CreatedAt = DateTime.Now,

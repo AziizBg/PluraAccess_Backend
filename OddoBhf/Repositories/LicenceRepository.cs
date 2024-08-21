@@ -37,7 +37,8 @@ namespace OddoBhf.Repositories
                 {
                     Id = l.Id,
                     CurrentSession = l.CurrentSession,
-                    Email = l.Email
+                    Email = l.Email,
+                    IsBeingRequested = l.IsBeingRequested
                 })
                 .ToList();
         }
