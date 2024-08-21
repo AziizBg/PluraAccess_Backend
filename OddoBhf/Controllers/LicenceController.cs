@@ -106,6 +106,20 @@ namespace OddoBhf.Controllers
             }
         }
 
+        [HttpGet("{id}/cancelBookLicence")]
+        public async Task<IActionResult> CancelBookLicence(int id)
+        {
+            try
+            {
+                await _licenceService.CancelRequestLicence(id);
+                return Ok();
+            }
+            catch
+            {
+                return BadRequest();
+            }
+        }
+
         [HttpDelete("{id}")]
         public IActionResult Deletelicence(int id)
         {

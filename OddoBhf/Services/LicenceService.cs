@@ -75,7 +75,7 @@ namespace OddoBhf.Services
                 var password = "7cB3MP.6y9.Z?c?";
 
                 //licence being requested to disable other requests for it 
-                licence.IsBeingRequested = true;
+                licence.BookedByUserId = user.Id;
                 _licenceRepository.UpdateLicence(licence);
 
                 // send licence requested notification to disable taking this licence from everyone
@@ -106,7 +106,7 @@ namespace OddoBhf.Services
                 _sessionService.AddSession(session);
 
                 licence.CurrentSession = session;
-                licence.IsBeingRequested = false;
+                licence.BookedByUserId = null;
                 _licenceRepository.UpdateLicence(licence);
 
                 //send licence taken notification 
@@ -130,7 +130,7 @@ namespace OddoBhf.Services
                 _sessionService.DeleteSession(session.Id);
                 
                 //liberate the licence
-                licence.IsBeingRequested = false;
+                licence.BookedByUserId = null;
                 _licenceRepository.UpdateLicence(licence);
                 
                 //send notification
@@ -183,7 +183,7 @@ namespace OddoBhf.Services
                         UserId = queue.User.Id,
                         LicenceId = id
                     });
-                    licence.IsBeingRequested = true;
+                    licence.BookedByUserId = queue.User.Id;
                 }
                 
                 licence.CurrentSession = null;
@@ -203,6 +203,49 @@ namespace OddoBhf.Services
             {
                 throw new Exception($"An error occurred: {ex.Message}");
             }
+        }
+        
+        public async Task<Licence> CancelRequestLicence(int id)
+        {
+            //check if licence exists
+            var licence = _licenceRepository.GetLicenceById(id);
+            if (licence == null || licence.BookedByUserId==null)
+            {
+                return null;
+            }
+            var userId = licence.BookedByUserId;
+
+            //remove from queue:
+            _queueService.RemoveFirst();
+
+            // send notification to the first in the queue if its not empty
+            var queue = _queueService.GetFirst();
+            if (queue != null)
+            {
+                await _notification.Clients.Client(queue.User.ConnectionId).SendMessage(new Notification
+                {
+                    CreatedAt = DateTime.Now,
+                    Title = "First in queue",
+                    Message = "Click to take the licence",
+                    UserId = queue.User.Id,
+                    LicenceId = id
+                });
+                licence.BookedByUserId = queue.User.Id;
+                _licenceRepository.UpdateLicence(licence);
+            }
+            else
+            {
+                licence.BookedByUserId = null;
+                _licenceRepository.UpdateLicence(licence);
+                await _notification.Clients.All.SendMessage(new Notification
+                {
+                    CreatedAt = DateTime.Now,
+                    Title = "Licence Available",
+                    Message = "Licence no longer booked",
+                    UserId = userId
+                });
+            }
+            return licence;
         }
     }
 }

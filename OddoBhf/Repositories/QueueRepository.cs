@@ -54,7 +54,7 @@ namespace OddoBhf.Repositories
         }
         public Queue GetFirst()
         {
-            return _context.Queue.Include(q => q.User).OrderBy(q => q.RequestedAt).First();
+            return _context.Queue.Include(q => q.User).OrderBy(q => q.RequestedAt).FirstOrDefault();
         }
         public Queue GetByUserId(int id)
         {
