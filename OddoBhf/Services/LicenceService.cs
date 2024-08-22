@@ -79,7 +79,8 @@ namespace OddoBhf.Services
                 _licenceRepository.UpdateLicence(licence);
 
                 // send licence requested notification to disable taking this licence from everyone
-                await _notification.Clients.All.SendMessage(new Notification
+                var excludedConnectionIds = new List<string> { user.ConnectionId };
+                await _notification.Clients.AllExcept(excludedConnectionIds).SendMessage(new Notification
                 {
                     Title = "Licence Requested",
                     Message = user.Name + " has requested licence number " + licence.Id,
@@ -107,6 +108,7 @@ namespace OddoBhf.Services
 
                 licence.CurrentSession = session;
                 licence.BookedByUserId = null;
+                licence.BookedUntil= null;
                 _licenceRepository.UpdateLicence(licence);
 
                 //send licence taken notification 
@@ -183,6 +185,7 @@ namespace OddoBhf.Services
                         UserId = queue.User.Id,
                         LicenceId = id
                     });
+                    licence.BookedUntil = DateTime.Now.AddMinutes(1);
                     licence.BookedByUserId = queue.User.Id;
                 }
                 
@@ -226,11 +229,12 @@ namespace OddoBhf.Services
                 {
                     CreatedAt = DateTime.Now,
                     Title = "First in queue",
-                    Message = "Click to take the licence",
+                    Message = "You can now take a licence before the timer ends!",
                     UserId = queue.User.Id,
                     LicenceId = id
                 });
                 licence.BookedByUserId = queue.User.Id;
+                licence.BookedUntil = DateTime.Now.AddMinutes(1);
                 _licenceRepository.UpdateLicence(licence);
             }
             else
