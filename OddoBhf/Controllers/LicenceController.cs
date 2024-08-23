@@ -75,8 +75,21 @@ namespace OddoBhf.Controllers
             return NoContent();
         }
 
-        
-        [HttpPost("{id}/take")]
+        [HttpGet("extend/{id}")]
+        public IActionResult ExtendLicence(int id)
+        {
+            try
+            {
+                return Ok(_licenceService.ExtendLicence(id));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+        [HttpPost("take/{id}")]
         [ProducesResponseType(200, Type = typeof(Licence))]
         public async Task<IActionResult> TakeLicence(int id, [FromBody] OpenPluralsightDto dto)
         {
@@ -96,7 +109,7 @@ namespace OddoBhf.Controllers
             }
         }
 
-        [HttpPost("{id}/return")]
+        [HttpPost("return/{id}")]
         [ProducesResponseType(200, Type = typeof(Session))]
         public async Task<IActionResult> ReturnLicence(int id, [FromBody] ReturnLicenceDto dto)
         {
@@ -116,7 +129,7 @@ namespace OddoBhf.Controllers
             }
         }
 
-        [HttpGet("{id}/cancelBookLicence")]
+        [HttpGet("cancelBookLicence/{id}")]
         public async Task<IActionResult> CancelBookLicence(int id)
         {
             try

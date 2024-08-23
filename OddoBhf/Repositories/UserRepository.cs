@@ -40,7 +40,7 @@ namespace OddoBhf.Repositories
         }
         public User GetUserByConnectionId(string connectionId)
         {
-            return _context.Users.First(l => l.ConnectionId == connectionId);
+            return _context.Users.FirstOrDefault(l => l.ConnectionId == connectionId);
         }
 
         public void UpdateUser(User User)

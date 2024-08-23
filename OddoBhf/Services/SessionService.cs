@@ -33,8 +33,14 @@ namespace OddoBhf.Services
         public void UpdateSession( Session session)
         {
             _sessionRepository.UpdateSession(session);
-
         }
+
+        public void ExtendSession(Session session)
+        {
+            session.EndTime = DateTime.Now.AddHours(2);
+            _sessionRepository.UpdateSession(session);
+        }
+
         public void DeleteSession(int id)
         {
             _sessionRepository.DeleteSession(id);

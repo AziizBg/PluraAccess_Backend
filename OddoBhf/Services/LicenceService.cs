@@ -60,6 +60,30 @@ namespace OddoBhf.Services
             _licenceRepository.DeleteLicence(id);
         }
 
+        public Session ExtendLicence(int id)
+        {
+            var licence = _licenceRepository.GetLicenceById(id);
+            if (licence == null) throw new Exception("Licence not found");
+
+            if(licence.CurrentSession == null)
+            {
+                throw new Exception("Licence available");   
+            }
+
+            if (_queueService.GetFirst()!=null)
+            {
+                throw new Exception("Queue not empty");
+            }
+            _sessionService.ExtendSession(licence.CurrentSession);
+            _notification.Clients.All.SendMessage(new Notification
+            {
+                Message = "Licence" + licence.Id + "is extended",
+                Title = "Licence Extended",
+                UserId = licence.CurrentSession.User.Id
+            });
+            return licence.CurrentSession;
+        }
+
         public async Task<Licence> TakeLicence(int id, OpenPluralsightDto dto)
         {
             //check if the licence exists and has no current session only if fromQueue = true
@@ -277,5 +301,6 @@ namespace OddoBhf.Services
             }
             return licence;
         }
+
     }
 }

@@ -4,14 +4,14 @@ using OddoBhf.Models;
 
 public interface IUserRepository
 {
-    ICollection<User> GetAllUsers();
+    public ICollection<User> GetAllUsers();
 
-    User GetUserById(int id);
-    void AddUser(User User);
-    void UpdateUser(User User);
-    void DeleteUser(int id);
-     void SaveChanges();
-     User GetUserByConnectionId(string connectionId);
+    public User GetUserById(int id);
+    public void AddUser(User User);
+    public void UpdateUser(User User);
+    public void DeleteUser(int id);
+     public void SaveChanges();
+     public User GetUserByConnectionId(string connectionId);
 
 
 }

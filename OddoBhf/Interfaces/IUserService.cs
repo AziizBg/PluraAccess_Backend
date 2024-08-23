@@ -4,12 +4,12 @@ namespace OddoBhf.Interfaces
 {
     public interface IUserService
     {
-        ICollection<User> GetAllUsers();
-        User GetUserById(int id);
-        void AddUser(User user);
-        void UpdateUser(int id, User user);
-        void DeleteUser(int id);
-        User GetUserByConnectionId(string connectionId);
+        public ICollection<User> GetAllUsers();
+        public User GetUserById(int id);
+        public void AddUser(User user);
+        public void UpdateUser(int id, User user);
+        public void DeleteUser(int id);
+        public User GetUserByConnectionId(string connectionId);
 
     }
 }

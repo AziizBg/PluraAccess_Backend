@@ -49,9 +49,12 @@ namespace OddoBhf.Hub
         public override Task OnDisconnectedAsync(Exception? exception)
         {
             var user = _userService.GetUserByConnectionId(Context.ConnectionId);
-            user.ConnectionId = null;
-            user.BookedLicenceId = null;
-            _userService.UpdateUser(user.Id, user);
+            if (user!=null)
+            {
+                user.ConnectionId = null;
+                user.BookedLicenceId = null;
+                _userService.UpdateUser(user.Id, user);
+            }
             var licence = _licenceService.GetLicenceBookedByUserId(user.Id);
             if (licence != null)
             {
