@@ -38,6 +38,10 @@ namespace OddoBhf.Repositories
         {
             return _context.Users.First(l => l.Id == id);
         }
+        public User GetUserByConnectionId(string connectionId)
+        {
+            return _context.Users.First(l => l.ConnectionId == connectionId);
+        }
 
         public void UpdateUser(User User)
         {

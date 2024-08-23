@@ -1,4 +1,5 @@
-﻿using OddoBhf.Interfaces;
+﻿using Microsoft.EntityFrameworkCore;
+using OddoBhf.Interfaces;
 using OddoBhf.Models;
 
 namespace OddoBhf.Services
@@ -21,6 +22,11 @@ namespace OddoBhf.Services
         {
             return _userRepository.GetUserById(id);
         }
+        public User GetUserByConnectionId(string connectionId)
+        {
+            return _userRepository.GetUserByConnectionId(connectionId);
+        }
+
 
         public void AddUser(User user)
         {

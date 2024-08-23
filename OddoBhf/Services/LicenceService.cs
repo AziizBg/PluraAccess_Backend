@@ -16,22 +16,26 @@ namespace OddoBhf.Services
         private readonly ILicenceRepository _licenceRepository;
         private readonly ISessionService _sessionService;
         private readonly IQueueService _queueService;
-        private readonly IUserRepository _userRepository;
+        private readonly IUserService _userService;
         private readonly HttpClient _httpClient;
         private readonly IHubContext<NotificationHub, INotificationHub> _notification;
 
 
-        public LicenceService(ILicenceRepository licenceRepository, ISessionService sessionService,IQueueService queueService, IUserRepository userRepository, HttpClient httpClient, IHubContext<NotificationHub, INotificationHub> hubContext) {
+        public LicenceService(ILicenceRepository licenceRepository, ISessionService sessionService,IQueueService queueService, IUserService userService, HttpClient httpClient, IHubContext<NotificationHub, INotificationHub> hubContext) {
             _licenceRepository = licenceRepository;
             _sessionService = sessionService;
             _queueService = queueService;
-            _userRepository = userRepository;
+            _userService = userService;
             _httpClient = httpClient;
             _notification= hubContext;
         }
         public Licence GetLicenceById(int id)
         {
             return _licenceRepository.GetLicenceById(id);
+        }
+        public Licence GetLicenceBookedByUserId(int id)
+        {
+            return _licenceRepository.GetLicenceBookedByUserId(id);
         }
 
         public ICollection<GetLicenceDto> GetLicences()
@@ -46,6 +50,10 @@ namespace OddoBhf.Services
         public void UpdateLicence( Licence licence)
         {
             _licenceRepository.UpdateLicence(licence);
+            _notification.Clients.All.SendMessage(new Notification
+            {
+                Message = "Licence " + licence.Id + " Updated"
+            });
         }
         public void DeleteLicence(int id)
         {
@@ -62,7 +70,7 @@ namespace OddoBhf.Services
             }
 
             //check if the user is given and exists
-            var user = _userRepository.GetUserById(dto.UserId);
+            var user = _userService.GetUserById(dto.UserId);
             if (user == null)
             {
                 throw new Exception("User not provided");
@@ -77,6 +85,8 @@ namespace OddoBhf.Services
                 //licence being requested to disable other requests for it 
                 licence.BookedByUserId = user.Id;
                 _licenceRepository.UpdateLicence(licence);
+                user.BookedLicenceId = id;
+                _userService.UpdateUser(user.Id, user);
 
                 // send licence requested notification to disable taking this licence from everyone
                 var excludedConnectionIds = new List<string> { user.ConnectionId };
@@ -111,6 +121,9 @@ namespace OddoBhf.Services
                 licence.BookedUntil= null;
                 _licenceRepository.UpdateLicence(licence);
 
+                user.BookedLicenceId = null;
+                _userService.UpdateUser(user.Id, user);
+
                 //send licence taken notification 
                 await _notification.Clients.All.SendMessage(new Notification
                 {
@@ -134,7 +147,10 @@ namespace OddoBhf.Services
                 //liberate the licence
                 licence.BookedByUserId = null;
                 _licenceRepository.UpdateLicence(licence);
-                
+
+                user.BookedLicenceId = null;
+                _userService.UpdateUser(user.Id, user);
+
                 //send notification
                 await _notification.Clients.All.SendMessage(new Notification
                 {
@@ -187,6 +203,9 @@ namespace OddoBhf.Services
                     });
                     licence.BookedUntil = DateTime.Now.AddMinutes(1);
                     licence.BookedByUserId = queue.User.Id;
+
+                    queue.User.BookedLicenceId = id;
+                    _userService.UpdateUser(queue.User.Id, queue.User);
                 }
                 
                 licence.CurrentSession = null;
@@ -216,10 +235,14 @@ namespace OddoBhf.Services
             {
                 return null;
             }
-            var userId = licence.BookedByUserId;
+            var userId = (int) licence.BookedByUserId;
+            var user = _userService.GetUserById(userId);
+
+            user.BookedLicenceId = null;
+            _userService.UpdateUser(user.Id, user);
 
             //remove from queue:
-            _queueService.RemoveFirst();
+            _queueService.RemoveUser(userId);
 
             // send notification to the first in the queue if its not empty
             var queue = _queueService.GetFirst();
@@ -236,6 +259,9 @@ namespace OddoBhf.Services
                 licence.BookedByUserId = queue.User.Id;
                 licence.BookedUntil = DateTime.Now.AddMinutes(1);
                 _licenceRepository.UpdateLicence(licence);
+
+                queue.User.BookedLicenceId = id;
+                _userService.UpdateUser(queue.User.Id, queue.User);
             }
             else
             {

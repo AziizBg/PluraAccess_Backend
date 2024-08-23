@@ -49,6 +49,12 @@ namespace OddoBhf.Repositories
             return _context.Licences.Include(l => l.CurrentSession).First(l => l.Id == id);
         }
 
+        public Licence GetLicenceBookedByUserId(int userId)
+        {
+            var licence = _context.Licences.Include(l=>l.CurrentSession).FirstOrDefault(l=>l.BookedByUserId==userId);
+            return licence;
+        }
+
         public void UpdateLicence(Licence licence)
         {
             _context.Licences.Update(licence);

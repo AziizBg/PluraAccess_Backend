@@ -27,7 +27,9 @@ namespace OddoBhf.Repositories
         }
         public int GetPosition(int userId)
         {
-            var queue = _context.Queue.Include(q=>q.User).OrderBy(q => q.RequestedAt).ToList();
+            var queue = _context.Queue.Include(q=>q.User)
+                .OrderBy(q => q.RequestedAt)
+                .ToList();
             var position = queue
                 .Select((q, index) => new { q.User.Id, Position = index + 1 })
                 .FirstOrDefault(s => s.Id == userId)?.Position;
@@ -54,7 +56,12 @@ namespace OddoBhf.Repositories
         }
         public Queue GetFirst()
         {
-            return _context.Queue.Include(q => q.User).OrderBy(q => q.RequestedAt).FirstOrDefault();
+            var list =  _context.Queue.Include(q => q.User)
+                .Where(q => q.User.ConnectionId != null)
+                .OrderBy(q => q.RequestedAt)
+                .ToList();
+             
+            return list.FirstOrDefault();
         }
         public Queue GetByUserId(int id)
         {

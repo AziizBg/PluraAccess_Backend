@@ -11,6 +11,7 @@ namespace OddoBhf.Interfaces
     public interface ILicenceService
     {
         public Licence GetLicenceById(int id);
+        public Licence GetLicenceBookedByUserId(int id);
 
         public ICollection<GetLicenceDto> GetLicences();
         public void CreateLicence([FromBody] Licence licence);

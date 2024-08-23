@@ -9,5 +9,7 @@ namespace OddoBhf.Interfaces
         void AddUser(User user);
         void UpdateUser(int id, User user);
         void DeleteUser(int id);
+        User GetUserByConnectionId(string connectionId);
+
     }
 }

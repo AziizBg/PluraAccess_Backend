@@ -10,6 +10,8 @@ public interface IUserRepository
     void AddUser(User User);
     void UpdateUser(User User);
     void DeleteUser(int id);
-    public void SaveChanges();
+     void SaveChanges();
+     User GetUserByConnectionId(string connectionId);
+
 
 }

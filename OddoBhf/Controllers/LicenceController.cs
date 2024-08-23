@@ -24,22 +24,32 @@ namespace OddoBhf.Controllers
             _licenceService = licenceService;
         }
 
-        // Get licence by id:
-        [HttpGet("{id}")]
-        [ProducesResponseType(200, Type=typeof(Licence))]
-        public IActionResult GetLicenceById(int id)
-        {
-            return Ok(_licenceService.GetLicenceById(id));
-        }
-
 
         // GET: LicenceController
         [HttpGet]
-        [ProducesResponseType(200, Type=typeof(IEnumerable<Licence>))]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<GetLicenceDto>))]
         public IActionResult GetLicences()
         {
             return Ok(_licenceService.GetLicences());
         }
+
+        // Get licence by id:
+        [HttpGet("{id}")]
+        [ProducesResponseType(200, Type=typeof(GetLicenceDto))]
+        public IActionResult GetLicenceById(int id)
+        {
+            var licence = _licenceService.GetLicenceById(id);
+            var result = new GetLicenceDto()
+            {
+                Email = licence.Email,
+                BookedByUserId = licence.BookedByUserId,
+                BookedUntil = licence.BookedUntil,
+                CurrentSession = licence.CurrentSession,
+            };
+            return Ok(result);
+        }
+
+
 
         //POST: LicenceController 
         [HttpPost]
