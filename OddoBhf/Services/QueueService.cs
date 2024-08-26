@@ -8,13 +8,13 @@ namespace OddoBhf.Services
 {
     public class QueueService:IQueueService
     {
-        private readonly IHubContext<NotificationHub, INotificationHub> _notification;
+        private readonly IHubContext<NotificationHub, INotificationHub> _hubContext;
         private readonly IQueueRepository _queueRepository;
 
         public QueueService(IQueueRepository queueRepository, IHubContext<NotificationHub, INotificationHub> hubContext)
         {
             _queueRepository = queueRepository;
-            _notification = hubContext;
+            _hubContext = hubContext;
         }
 
         public ICollection<Queue> GetAll()
@@ -33,8 +33,8 @@ namespace OddoBhf.Services
         public void Add(Queue queue)
         {
             _queueRepository.Add(queue);
-            _notification.Groups.AddToGroupAsync(queue.User.ConnectionId, "QueueGroup");
-            _notification.Clients.Group("QueueGroup")
+            _hubContext.Groups.AddToGroupAsync(queue.User.ConnectionId, "QueueGroup");
+            _hubContext.Clients.Group("QueueGroup")
                 .SendMessage(new Notification
             {
                 Message = "User added to the queue",
@@ -72,8 +72,8 @@ namespace OddoBhf.Services
         {
             var queue = _queueRepository.GetByUserId(id);
             _queueRepository.Delete(queue.Id);
-            _notification.Groups.RemoveFromGroupAsync(queue.User.ConnectionId, "QueueGroup");
-            _notification.Clients.Group("QueueGroup")
+            _hubContext.Groups.RemoveFromGroupAsync(queue.User.ConnectionId, "QueueGroup");
+            _hubContext.Clients.Group("QueueGroup")
                 .SendMessage(new Notification
                 {
                     Message = "User removed from the queue",

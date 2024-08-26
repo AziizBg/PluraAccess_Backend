@@ -34,7 +34,7 @@ namespace OddoBhf.Controllers
         }
 
         [HttpGet("user/{user_id}")]
-        public async Task<ActionResult<PaginatedList<Session>>> GetSessionsByUserId(int user_id, int pageIndex = 1, int pageSize = 10)
+        public async Task<ActionResult<PaginatedList<Session>>> GetSessionsByUserId(int user_id, int pageIndex = 0, int pageSize = 10)
         {
             return await _sessionService.GetSessionsByUserId(user_id, pageIndex, pageSize);
         }

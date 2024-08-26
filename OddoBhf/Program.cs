@@ -26,12 +26,15 @@ builder.Services.AddScoped<ILicenceRepository, LicenceRepository>();
 builder.Services.AddScoped<ISessionRepository, SessionRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IQueueRepository, QueueRepository>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+
 
 // add services
 builder.Services.AddScoped<ILicenceService, LicenceService>();
 builder.Services.AddScoped<ISessionService, SessionService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IQueueService, QueueService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
 
 

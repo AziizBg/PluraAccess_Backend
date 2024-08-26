@@ -17,17 +17,20 @@ namespace OddoBhf.Services
         private readonly ISessionService _sessionService;
         private readonly IQueueService _queueService;
         private readonly IUserService _userService;
+        private readonly INotificationService _notificationService;
         private readonly HttpClient _httpClient;
-        private readonly IHubContext<NotificationHub, INotificationHub> _notification;
+        private readonly IHubContext<NotificationHub, INotificationHub> _hubContext;
 
 
-        public LicenceService(ILicenceRepository licenceRepository, ISessionService sessionService,IQueueService queueService, IUserService userService, HttpClient httpClient, IHubContext<NotificationHub, INotificationHub> hubContext) {
+        public LicenceService(ILicenceRepository licenceRepository, ISessionService sessionService,IQueueService queueService, IUserService userService, HttpClient httpClient, IHubContext<NotificationHub, INotificationHub> hubContext, INotificationService notificationService)
+        {
             _licenceRepository = licenceRepository;
             _sessionService = sessionService;
             _queueService = queueService;
             _userService = userService;
             _httpClient = httpClient;
-            _notification= hubContext;
+            _hubContext = hubContext;
+            _notificationService = notificationService;
         }
         public Licence GetLicenceById(int id)
         {
@@ -50,7 +53,7 @@ namespace OddoBhf.Services
         public void UpdateLicence( Licence licence)
         {
             _licenceRepository.UpdateLicence(licence);
-            _notification.Clients.All.SendMessage(new Notification
+            _hubContext.Clients.All.SendMessage(new Notification
             {
                 Message = "Licence " + licence.Id + " Updated"
             });
@@ -75,12 +78,16 @@ namespace OddoBhf.Services
                 throw new Exception("Queue not empty");
             }
             _sessionService.ExtendSession(licence.CurrentSession);
-            _notification.Clients.All.SendMessage(new Notification
+            var notification = new Notification
             {
-                Message = "Licence" + licence.Id + "is extended",
+                CreatedAt = DateTime.Now,
+                LicenceId = licence.Id,
+                Message = "Licence " + licence.Id + " is extended",
                 Title = "Licence Extended",
                 UserId = licence.CurrentSession.User.Id
-            });
+            };
+            _hubContext.Clients.All.SendMessage(notification);
+            _notificationService.AddNotification(notification);
             return licence.CurrentSession;
         }
 
@@ -114,7 +121,7 @@ namespace OddoBhf.Services
 
                 // send licence requested notification to disable taking this licence from everyone
                 var excludedConnectionIds = new List<string> { user.ConnectionId };
-                await _notification.Clients.AllExcept(excludedConnectionIds).SendMessage(new Notification
+                await _hubContext.Clients.AllExcept(excludedConnectionIds).SendMessage(new Notification
                 {
                     Title = "Licence Requested",
                     Message = user.Name + " has requested licence number " + licence.Id,
@@ -149,7 +156,7 @@ namespace OddoBhf.Services
                 _userService.UpdateUser(user.Id, user);
 
                 //send licence taken notification 
-                await _notification.Clients.All.SendMessage(new Notification
+                await _hubContext.Clients.All.SendMessage(new Notification
                 {
                     CreatedAt = DateTime.Now,
                     Title = "Licence Taken",
@@ -176,7 +183,7 @@ namespace OddoBhf.Services
                 _userService.UpdateUser(user.Id, user);
 
                 //send notification
-                await _notification.Clients.All.SendMessage(new Notification
+                await _hubContext.Clients.All.SendMessage(new Notification
                 {
                     Title = "Licence Request Failed",
                     Message = "Request for 'licence number " + licence.Id + " failed",
@@ -202,11 +209,6 @@ namespace OddoBhf.Services
                 if (dto.isBrowserClosed == false)
                 {
                     var response = await _httpClient.GetAsync("http://127.0.0.1:5000/close");
-
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        throw new Exception("Failed to close the browser session");
-                    }
                 }
                 //end session
                 currentSession.EndTime = DateTime.Now;
@@ -217,14 +219,17 @@ namespace OddoBhf.Services
                 var queue = _queueService.GetFirst();
                 if (queue != null)
                 {
-                    await _notification.Clients.Client(queue.User.ConnectionId).SendMessage(new Notification
+                    var notification = new Notification
                     {
                         CreatedAt = DateTime.Now,
                         Title = "First in queue",
                         Message = "Click to take the licence",
                         UserId = queue.User.Id,
                         LicenceId = id
-                    });
+                    };
+                    _notificationService.AddNotification(notification);
+                    await _hubContext.Clients.Client(queue.User.ConnectionId).SendMessage(notification);
+
                     licence.BookedUntil = DateTime.Now.AddMinutes(1);
                     licence.BookedByUserId = queue.User.Id;
 
@@ -235,7 +240,7 @@ namespace OddoBhf.Services
                 licence.CurrentSession = null;
                 _licenceRepository.UpdateLicence(licence);
                 
-                await _notification.Clients.All.SendMessage(new Notification
+                await _hubContext.Clients.All.SendMessage(new Notification
                 {
                     CreatedAt = DateTime.Now,
                     Title = "Licence Returned",
@@ -268,18 +273,32 @@ namespace OddoBhf.Services
             //remove from queue:
             _queueService.RemoveUser(userId);
 
+            var notification = new Notification
+            {
+                CreatedAt = DateTime.Now,
+                Title = "Booking Canceled",
+                Message = "The licence " + id + " booking has been canceled",
+                LicenceId = id,
+                UserId = userId,
+            };
+            _notificationService.AddNotification(notification);
+            await _hubContext.Clients.Client(user.ConnectionId).SendMessage(notification);
+
             // send notification to the first in the queue if its not empty
             var queue = _queueService.GetFirst();
             if (queue != null)
             {
-                await _notification.Clients.Client(queue.User.ConnectionId).SendMessage(new Notification
+                var nextUserNotification = new Notification
                 {
                     CreatedAt = DateTime.Now,
                     Title = "First in queue",
                     Message = "You can now take a licence before the timer ends!",
                     UserId = queue.User.Id,
                     LicenceId = id
-                });
+                };
+                _notificationService.AddNotification(nextUserNotification);
+                await _hubContext.Clients.Client(queue.User.ConnectionId).SendMessage(nextUserNotification);
+
                 licence.BookedByUserId = queue.User.Id;
                 licence.BookedUntil = DateTime.Now.AddMinutes(1);
                 _licenceRepository.UpdateLicence(licence);
@@ -291,7 +310,7 @@ namespace OddoBhf.Services
             {
                 licence.BookedByUserId = null;
                 _licenceRepository.UpdateLicence(licence);
-                await _notification.Clients.All.SendMessage(new Notification
+                await _hubContext.Clients.All.SendMessage(new Notification
                 {
                     CreatedAt = DateTime.Now,
                     Title = "Licence Available",

@@ -22,7 +22,7 @@ namespace OddoBhf.Services
         {
             return _sessionRepository.GetSessionById(id);
         }
-        public async Task<ActionResult<PaginatedList<Session>>> GetSessionsByUserId(int user_id, int pageIndex = 1, int pageSize = 10)
+        public async Task<ActionResult<PaginatedList<Session>>> GetSessionsByUserId(int user_id, int pageIndex = 0, int pageSize = 10)
         {
             return await _sessionRepository.GetSessionsByUserId(user_id, pageIndex, pageSize);
         }
