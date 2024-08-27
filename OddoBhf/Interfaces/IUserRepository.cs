@@ -12,6 +12,7 @@ public interface IUserRepository
     public void DeleteUser(int id);
      public void SaveChanges();
      public User GetUserByConnectionId(string connectionId);
+    public User GetUserByEmail(string email);
 
 
 }

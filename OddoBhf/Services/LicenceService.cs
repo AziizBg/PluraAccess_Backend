@@ -124,7 +124,7 @@ namespace OddoBhf.Services
                 await _hubContext.Clients.AllExcept(excludedConnectionIds).SendMessage(new Notification
                 {
                     Title = "Licence Requested",
-                    Message = user.Name + " has requested licence number " + licence.Id,
+                    Message = user.UserName + " has requested licence number " + licence.Id,
                     UserId = user.Id,
                 });
                 
@@ -160,7 +160,7 @@ namespace OddoBhf.Services
                 {
                     CreatedAt = DateTime.Now,
                     Title = "Licence Taken",
-                    Message = user.Name + " has taken licence number " + licence.Id,
+                    Message = user.UserName + " has taken licence number " + licence.Id,
                     UserId =user.Id,
                 });
 
@@ -244,7 +244,7 @@ namespace OddoBhf.Services
                 {
                     CreatedAt = DateTime.Now,
                     Title = "Licence Returned",
-                    Message = currentSession?.User?.Name + " has returned licence number " + licence.Id,
+                    Message = currentSession?.User?.UserName + " has returned licence number " + licence.Id,
                     UserId = currentSession?.User?.Id,
                 });
 

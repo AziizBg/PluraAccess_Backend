@@ -36,7 +36,15 @@ namespace OddoBhf.Repositories
 
         public User GetUserById(int id)
         {
-            return _context.Users.FirstOrDefault(l => l.Id == id);
+            var user = _context.Users.FirstOrDefault(l => l.Id == id);
+            return user;
+        }
+
+        public User GetUserByEmail(string email)
+        {
+            var user = _context.Users.FirstOrDefault(
+                l => l.Email == email );
+            return user;
         }
         public User GetUserByConnectionId(string connectionId)
         {

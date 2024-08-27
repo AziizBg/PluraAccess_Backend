@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OddoBhf.Dto.User;
+using OddoBhf.Helpers;
 using OddoBhf.Interfaces;
 using OddoBhf.Models;
 
@@ -45,28 +46,25 @@ namespace OddoBhf.Controllers
             {
                 return BadRequest("User cannot be null.");
             }
-            var user = new User { Name = userDto.Name };
 
-            _userService.AddUser(user);
+            var user = _userService.AddUser(userDto);
             return CreatedAtAction(nameof(GetUserById), new { id = user.Id }, user);
         }
 
         // PUT api/<UserController>/5
         [HttpPut("{id}")]
-        public IActionResult UpdateUser(int id, [FromBody] CreateUserDto user)
+        public IActionResult UpdateUser(int id, [FromBody] CreateUserDto dto)
         {
+            var user = _userService.GetUserById(id);
             if (user == null)
             {
-                return BadRequest("User Not Provided.");
+                return BadRequest(new { message = "User Not Found." });
             }
-
-            var User = new User
-            {
-                Id = id,
-                Name = user.Name,
-            };
-
-            _userService.UpdateUser(id, User);
+            user.Email = dto.Email;
+            user.UserName = dto.UserName;
+            user.Password = dto.Password;
+            user.Role = dto.Role;
+            _userService.UpdateUser(id, user);
             return NoContent();
         }
 
@@ -84,8 +82,33 @@ namespace OddoBhf.Controllers
             return NoContent();
         }
 
+        // POST api/<UserController>
+        [HttpPost("login")]
+        public ActionResult Loign([FromBody] LoginDto dto)
+        {
+            var user = _userService.GetUserByEmail(dto.Email);
+            if (user == null)
+            {
+                return BadRequest("Invalid Email");
+            }
+            if(!PasswordHasher.VerifyPassword(dto.Password, user.Password)) {
+                return BadRequest("Invalid Password");
 
+            }
+            return Ok(new { message = "Logged in Successfully" });
+        }
 
+        [HttpPost("register")]
+        public ActionResult Register([FromBody] CreateUserDto dto)
+        {
+            var user = _userService.GetUserByEmail(dto.Email);
+            if (user != null)
+            {
+                return BadRequest("Email Already Taken");
+            }
+            _userService.AddUser(dto);
+            return Ok(new { message= "Registered Successfully"});
+        }
 
     }
 }
