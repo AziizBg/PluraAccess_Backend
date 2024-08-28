@@ -8,6 +8,7 @@ using System.Text;
 using System.Net.Http;
 using Microsoft.AspNetCore.SignalR;
 using OddoBhf.Hub;
+using System;
 
 namespace OddoBhf.Services
 {
@@ -63,7 +64,7 @@ namespace OddoBhf.Services
             _licenceRepository.DeleteLicence(id);
         }
 
-        public Session ExtendLicence(int id)
+        public async Task<Session> ExtendLicence(int id)
         {
             var licence = _licenceRepository.GetLicenceById(id);
             if (licence == null) throw new Exception("Licence not found");
@@ -77,18 +78,29 @@ namespace OddoBhf.Services
             {
                 throw new Exception("Queue not empty");
             }
-            _sessionService.ExtendSession(licence.CurrentSession);
-            var notification = new Notification
+            try
             {
-                CreatedAt = DateTime.Now,
-                LicenceId = licence.Id,
-                Message = "Licence " + licence.Id + " is extended",
-                Title = "Licence Extended",
-                UserId = licence.CurrentSession.User.Id
-            };
-            _hubContext.Clients.All.SendMessage(notification);
-            _notificationService.AddNotification(notification);
-            return licence.CurrentSession;
+                //send request to the flask server to extend time left
+                var url = "http://127.0.0.1:5000/extend";
+                var response = await _httpClient.GetAsync(url);
+
+                _sessionService.ExtendSession(licence.CurrentSession);
+                var notification = new Notification
+                {
+                    CreatedAt = DateTime.Now,
+                    LicenceId = licence.Id,
+                    Message = "Licence " + licence.Id + " is extended",
+                    Title = "Licence Extended",
+                    UserId = licence.CurrentSession.User.Id
+                };
+                _hubContext.Clients.All.SendMessage(notification);
+                _notificationService.AddNotification(notification);
+                return licence.CurrentSession;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"An error occurred: {ex.Message}");
+            }
         }
 
         public async Task<Licence> TakeLicence(int id, OpenPluralsightDto dto)
@@ -109,9 +121,10 @@ namespace OddoBhf.Services
 
             try
             {
-                var url = dto.NgorkUrl != null ? dto.NgorkUrl + "/get_cookie" : "http://127.0.0.1:5000/get_cookie";
-                var email = "sami.belhadj@oddo-bhf.com";
-                var password = "7cB3MP.6y9.Z?c?";
+                var url = "http://127.0.0.1:5000/open";
+
+                var email = licence.Email;
+                var password = licence.Password;
 
                 //licence being requested to disable other requests for it 
                 licence.BookedByUserId = user.Id;
@@ -129,7 +142,7 @@ namespace OddoBhf.Services
                 });
                 
                 //send request to the flask server to open pluralsight
-                var payload = new { email, password, formattedEndTime = DateTime.Now.AddHours(2), licenceId = licence.Id };
+                var payload = new { email, password, endTime = DateTime.Now.AddHours(2), licenceId = licence.Id };
                 var jsonPayload = JsonSerializer.Serialize(payload);
                 var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
                 var response = await _httpClient.PostAsync(url, content);

@@ -76,11 +76,12 @@ namespace OddoBhf.Controllers
         }
 
         [HttpGet("extend/{id}")]
-        public IActionResult ExtendLicence(int id)
+        public async Task<IActionResult> ExtendLicence(int id)
         {
             try
             {
-                return Ok(_licenceService.ExtendLicence(id));
+                await _licenceService.ExtendLicence(id);
+                return Ok(new {message = "Licence Extended"});
             }
             catch (Exception ex)
             {
