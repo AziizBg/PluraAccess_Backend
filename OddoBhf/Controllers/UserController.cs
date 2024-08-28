@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using OddoBhf.Dto.User;
 using OddoBhf.Helpers;
 using OddoBhf.Interfaces;
@@ -8,6 +9,7 @@ using OddoBhf.Models;
 namespace OddoBhf.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize]
     [ApiController]
     public class UserController : Controller {
 
@@ -84,6 +86,7 @@ namespace OddoBhf.Controllers
 
         // POST api/<UserController>
         [HttpPost("login")]
+        [AllowAnonymous]
         public ActionResult Loign([FromBody] LoginDto dto)
         {
             var user = _userService.GetUserByEmail(dto.Email);
@@ -93,12 +96,15 @@ namespace OddoBhf.Controllers
             }
             if(!PasswordHasher.VerifyPassword(dto.Password, user.Password)) {
                 return BadRequest("Invalid Password");
-
             }
-            return Ok(new { message = "Logged in Successfully" });
+            user.Token = _userService.CreateJwt(user);
+            _userService.UpdateUser(user.Id, user);
+
+            return Ok(new { Token = user.Token, message = "Logged in Successfully"  });
         }
 
         [HttpPost("register")]
+        [AllowAnonymous]
         public ActionResult Register([FromBody] CreateUserDto dto)
         {
             var user = _userService.GetUserByEmail(dto.Email);

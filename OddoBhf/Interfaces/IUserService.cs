@@ -12,6 +12,8 @@ namespace OddoBhf.Interfaces
         public void DeleteUser(int id);
         public User GetUserByConnectionId(string connectionId);
         public User GetUserByEmail(string email);
+        public string CreateJwt(User user);
+
 
     }
 }

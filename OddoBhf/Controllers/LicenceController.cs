@@ -8,11 +8,13 @@ using System.Text;
 using OddoBhf.Dto;
 using OddoBhf.Services;
 using OddoBhf.Dto.Licence;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace OddoBhf.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize]
     [ApiController]
     public class LicenceController : Controller
     {
@@ -27,6 +29,7 @@ namespace OddoBhf.Controllers
 
         // GET: LicenceController
         [HttpGet]
+
         [ProducesResponseType(200, Type = typeof(IEnumerable<GetLicenceDto>))]
         public IActionResult GetLicences()
         {

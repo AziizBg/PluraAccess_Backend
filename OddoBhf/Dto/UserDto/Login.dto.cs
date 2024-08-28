@@ -9,7 +9,7 @@ namespace OddoBhf.Dto.User
         [DefaultValue("example@oddo-bhf.com")]
         [Required]
         public string? Email { get; set; }
-        [DefaultValue("Admin")]
+        [DefaultValue("12345678")]
         [Required]
         public string? Password { get; set; }
 

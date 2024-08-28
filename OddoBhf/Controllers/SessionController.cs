@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using OddoBhf.Interfaces;
 using OddoBhf.Models;
 using OddoBhf.Services;
@@ -8,6 +9,7 @@ using System.ComponentModel;
 namespace OddoBhf.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize]
     [ApiController]
     public class SessionController : Controller { 
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using OddoBhf.Dto.Queue;
 using OddoBhf.Interfaces;
 using OddoBhf.Models;
@@ -7,6 +8,8 @@ namespace OddoBhf.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [AllowAnonymous]
+
     public class QueueController : Controller
     {
 
