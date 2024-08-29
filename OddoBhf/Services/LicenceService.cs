@@ -142,7 +142,7 @@ namespace OddoBhf.Services
                 });
                 
                 //send request to the flask server to open pluralsight
-                var payload = new { email, password, endTime = DateTime.Now.AddHours(2), licenceId = licence.Id };
+                var payload = new { email, password, endTime = DateTime.Now.AddHours(2), licenceId = licence.Id, token = user.Token };
                 var jsonPayload = JsonSerializer.Serialize(payload);
                 var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
                 var response = await _httpClient.PostAsync(url, content);
@@ -236,14 +236,14 @@ namespace OddoBhf.Services
                     {
                         CreatedAt = DateTime.Now,
                         Title = "First in queue",
-                        Message = "Click to take the licence",
+                        Message = "You can take the licence before the timer ends!",
                         UserId = queue.User.Id,
                         LicenceId = id
                     };
                     _notificationService.AddNotification(notification);
                     await _hubContext.Clients.Client(queue.User.ConnectionId).SendMessage(notification);
 
-                    licence.BookedUntil = DateTime.Now.AddMinutes(1);
+                    licence.BookedUntil = DateTime.Now.AddMinutes(5);
                     licence.BookedByUserId = queue.User.Id;
 
                     queue.User.BookedLicenceId = id;
@@ -305,7 +305,7 @@ namespace OddoBhf.Services
                 {
                     CreatedAt = DateTime.Now,
                     Title = "First in queue",
-                    Message = "You can now take a licence before the timer ends!",
+                    Message = "You can take the licence before the timer ends!",
                     UserId = queue.User.Id,
                     LicenceId = id
                 };
@@ -313,7 +313,7 @@ namespace OddoBhf.Services
                 await _hubContext.Clients.Client(queue.User.ConnectionId).SendMessage(nextUserNotification);
 
                 licence.BookedByUserId = queue.User.Id;
-                licence.BookedUntil = DateTime.Now.AddMinutes(1);
+                licence.BookedUntil = DateTime.Now.AddMinutes(5);
                 _licenceRepository.UpdateLicence(licence);
 
                 queue.User.BookedLicenceId = id;

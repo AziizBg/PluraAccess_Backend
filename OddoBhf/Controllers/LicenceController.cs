@@ -114,6 +114,7 @@ namespace OddoBhf.Controllers
         }
 
         [HttpPost("return/{id}")]
+        [AllowAnonymous]
         [ProducesResponseType(200, Type = typeof(Session))]
         public async Task<IActionResult> ReturnLicence(int id, [FromBody] ReturnLicenceDto dto)
         {

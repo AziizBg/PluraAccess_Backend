@@ -92,7 +92,7 @@ namespace OddoBhf.Controllers
             var user = _userService.GetUserByEmail(dto.Email);
             if (user == null)
             {
-                return BadRequest("Invalid Email");
+                return BadRequest("User Not Found or Invalid Email");
             }
             if(!PasswordHasher.VerifyPassword(dto.Password, user.Password)) {
                 return BadRequest("Invalid Password");
